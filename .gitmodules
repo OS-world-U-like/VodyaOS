@@ -1,4 +1,0 @@
-[submodule "third_party/unix-history-repo"]
-    path = third_party/unix-history-repo
-    url = https://github.com/dspinellis/unix-history-repo.git
-    branch = Research-PDP7-Snapshot-Development
