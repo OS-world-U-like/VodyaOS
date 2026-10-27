@@ -29,8 +29,8 @@ char *s;
 #define BUSY 1
 #define NULL 0
 #define testbusy(p) ((int)(p)&BUSY)
-#define setbusy(p) (struct store *)((int)(p)+BUSY)
-#define clearbusy(p) (struct store *)((int)(p)&~BUSY)
+#define setbusy(p) ((struct store *)((char *)(p)+BUSY))
+#define clearbusy(p) ((struct store *)((char *)(p)-BUSY))
 
 struct store { struct store *ptr; };
 

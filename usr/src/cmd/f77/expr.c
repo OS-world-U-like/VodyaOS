@@ -20,7 +20,7 @@ register int l;
 register struct constblock * p;
 
 p = mkconst(TYLOGICAL);
-p->const.ci = l;
+p->konst.ci = l;
 return(p);
 }
 
@@ -32,7 +32,7 @@ ftnint l;
 register struct constblock *p;
 
 p = mkconst(TYLONG);
-p->const.ci = l;
+p->konst.ci = l;
 #ifdef MAXSHORT
 	if(l >= -MAXSHORT   &&   l <= MAXSHORT)
 		p->vtype = TYSHORT;
@@ -48,7 +48,7 @@ register int l;
 register struct constblock *p;
 
 p = mkconst(TYADDR);
-p->const.ci = l;
+p->konst.ci = l;
 return(p);
 }
 
@@ -61,7 +61,7 @@ double d;
 register struct constblock *p;
 
 p = mkconst(t);
-p->const.cd[0] = d;
+p->konst.cd[0] = d;
 return(p);
 }
 
@@ -74,10 +74,10 @@ char *s;
 register struct constblock *p;
 
 p = mkconst(TYUNKNOWN);
-p->const.ci = 0;
+p->konst.ci = 0;
 while(--leng >= 0)
 	if(*s != ' ')
-		p->const.ci = (p->const.ci << shift) | hextoi(*s++);
+		p->konst.ci = (p->konst.ci << shift) | hextoi(*s++);
 return(p);
 }
 
@@ -94,7 +94,7 @@ register char *s;
 
 p = mkconst(TYCHAR);
 p->vleng = ICON(l);
-p->const.ccp = s = (char *) ckalloc(l);
+p->konst.ccp = s = (char *) ckalloc(l);
 while(--l >= 0)
 	*s++ = *v++;
 return(p);
@@ -114,11 +114,11 @@ if( ISCONST(realp) && ISNUMERIC(rtype) && ISCONST(imagp) && ISNUMERIC(itype) )
 	{
 	p = mkconst( (rtype==TYDREAL||itype==TYDREAL) ? TYDCOMPLEX : TYCOMPLEX );
 	if( ISINT(rtype) )
-		p->const.cd[0] = realp->const.ci;
-	else	p->const.cd[0] = realp->const.cd[0];
+		p->konst.cd[0] = realp->konst.ci;
+	else	p->konst.cd[0] = realp->konst.cd[0];
 	if( ISINT(itype) )
-		p->const.cd[1] = imagp->const.ci;
-	else	p->const.cd[1] = imagp->const.cd[0];
+		p->konst.cd[1] = imagp->konst.ci;
+	else	p->konst.cd[1] = imagp->konst.cd[0];
 	}
 else
 	{
@@ -162,7 +162,7 @@ if(t == pt)
 else if( ISCONST(p) && pt!=TYADDR)
 	{
 	q = mkconst(t);
-	consconv(t, &(q->const), p->vtype, &(p->const));
+	consconv(t, &(q->konst), p->vtype, &(p->konst));
 	frexpr(p);
 	}
 #if TARGET == PDP11
@@ -236,7 +236,7 @@ switch(tag)
 	case TCONST:
 		if(e->vtype == TYCHAR)
 			{
-			e->const.ccp = copyn(1+strlen(e->const.ccp), e->const.ccp);
+			e->konst.ccp = copyn(1+strlen(e->konst.ccp), e->konst.ccp);
 			e->vleng = cpexpr(e->vleng);
 			}
 	case TERROR:
@@ -288,7 +288,7 @@ switch(p->tag)
 	case TCONST:
 		if( ISCHAR(p) )
 			{
-			free(p->const.ccp);
+			free(p->konst.ccp);
 			frexpr(p->vleng);
 			}
 		break;
@@ -767,7 +767,7 @@ error:
 
 
 
-LOCAL struct exprblock *stfcall(np, actlist)
+struct exprblock *stfcall(np, actlist)
 struct nameblock *np;
 struct listblock *actlist;
 {
@@ -1075,10 +1075,10 @@ checkvar = NULL;
 checkcond = NULL;
 if( ISICON(p) )
 	{
-	if(p->const.ci < 0)
+	if(p->konst.ci < 0)
 		goto badsub;
 	if( ISICON(dimp->nelt) )
-		if(p->const.ci < dimp->nelt->const.ci)
+		if(p->konst.ci < dimp->nelt->konst.ci)
 			return(p);
 		else
 			goto badsub;
@@ -1185,7 +1185,28 @@ return(p);
 
 
 tagptr mkprim(v, args, lstr, rstr)
-register union { struct paramblock; struct nameblock; } *v;
+register union { struct	{
+	unsigned tag:4;
+	unsigned vtype:4;
+	unsigned vclass:4;
+	unsigned vstg:4;
+	expptr vleng;
+	char varname[VL];
+	unsigned vdovar:1;
+	unsigned vdcldone:1;
+	unsigned vadjdim:1;
+	unsigned vsave:1;
+	unsigned vprocclass:3;
+	unsigned vregno:4;
+	union	{
+		int varno;
+		chainp vstfdesc;
+		struct intrpacked intrdesc;
+		} vardesc;
+	struct dimblock *vdim;
+	int voffset;
+	ptr paramval;
+	}; } *v;
 struct listblock *args;
 expptr lstr, rstr;
 {
@@ -1250,11 +1271,11 @@ switch(v->vstg)
 		nelt = 1;
 		if(t = v->vdim)
 			if( (neltp = t->nelt) && ISCONST(neltp) )
-				nelt = neltp->const.ci;
+				nelt = neltp->konst.ci;
 			else
 				dclerr("adjustable automatic array", v);
 		p = autovar(nelt, v->vtype, v->vleng);
-		v->voffset = p->memoffset->const.ci;
+		v->voffset = p->memoffset->konst.ci;
 		frexpr(p);
 		break;
 
@@ -1295,7 +1316,7 @@ if(p->vtype == TYUNKNOWN)
 
 
 
-LOCAL letter(c)
+letter(c)
 register int c;
 {
 if( isupper(c) )
@@ -1303,7 +1324,7 @@ if( isupper(c) )
 return(c - 'a');
 }
 
-#define ICONEQ(z, c)  (ISICON(z) && z->const.ci==c)
+#define ICONEQ(z, c)  (ISICON(z) && z->konst.ci==c)
 #define COMMUTE	{ e = lp;  lp = rp;  rp = e; }
 
 
@@ -1340,7 +1361,7 @@ switch(opcode)
 
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->konst.ci == 0)
 				goto retright;
 			goto mulop;
 			}
@@ -1361,10 +1382,10 @@ switch(opcode)
 	mulop:
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 1)
+			if(rp->konst.ci == 1)
 				goto retleft;
 
-			if(rp->const.ci == -1)
+			if(rp->konst.ci == -1)
 				{
 				frexpr(rp);
 				return( mkexpr(OPNEG, lp, 0) );
@@ -1375,7 +1396,7 @@ switch(opcode)
 			{
 			if(opcode == OPSTAR)
 				e = mkexpr(OPSTAR, lp->rightp, rp);
-			else  if(ISICON(rp) && lp->rightp->const.ci % rp->const.ci == 0)
+			else  if(ISICON(rp) && lp->rightp->konst.ci % rp->konst.ci == 0)
 				e = mkexpr(OPSLASH, lp->rightp, rp);
 			else	break;
 
@@ -1407,7 +1428,7 @@ switch(opcode)
 	addop:
 		if( ISICON(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->konst.ci == 0)
 				goto retleft;
 			if( ISPLUSOP(lp) && ISICON(lp->rightp) )
 				{
@@ -1458,7 +1479,7 @@ switch(opcode)
 
 		if( ISCONST(rp) )
 			{
-			if(rp->const.ci == 0)
+			if(rp->konst.ci == 0)
 				if(opcode == OPOR)
 					goto retleft;
 				else
@@ -1652,7 +1673,7 @@ error:	err(errs);
 error1:	return(TYERROR);
 }
 
-LOCAL expptr fold(e)
+expptr fold(e)
 register struct exprblock *e;
 {
 struct constblock *p;
@@ -1677,11 +1698,11 @@ if(rp == 0)
 	switch(opcode)
 		{
 		case OPNOT:
-			lp->const.ci = ! lp->const.ci;
+			lp->konst.ci = ! lp->konst.ci;
 			return(lp);
 
 		case OPBITNOT:
-			lp->const.ci = ~ lp->const.ci;
+			lp->konst.ci = ~ lp->konst.ci;
 			return(lp);
 
 		case OPNEG:
@@ -1711,50 +1732,50 @@ switch(opcode)
 		return(e);
 
 	case OPAND:
-		p->const.ci = lp->const.ci && rp->const.ci;
+		p->konst.ci = lp->konst.ci && rp->konst.ci;
 		break;
 
 	case OPOR:
-		p->const.ci = lp->const.ci || rp->const.ci;
+		p->konst.ci = lp->konst.ci || rp->konst.ci;
 		break;
 
 	case OPEQV:
-		p->const.ci = lp->const.ci == rp->const.ci;
+		p->konst.ci = lp->konst.ci == rp->konst.ci;
 		break;
 
 	case OPNEQV:
-		p->const.ci = lp->const.ci != rp->const.ci;
+		p->konst.ci = lp->konst.ci != rp->konst.ci;
 		break;
 
 	case OPBITAND:
-		p->const.ci = lp->const.ci & rp->const.ci;
+		p->konst.ci = lp->konst.ci & rp->konst.ci;
 		break;
 
 	case OPBITOR:
-		p->const.ci = lp->const.ci | rp->const.ci;
+		p->konst.ci = lp->konst.ci | rp->konst.ci;
 		break;
 
 	case OPBITXOR:
-		p->const.ci = lp->const.ci ^ rp->const.ci;
+		p->konst.ci = lp->konst.ci ^ rp->konst.ci;
 		break;
 
 	case OPLSHIFT:
-		p->const.ci = lp->const.ci << rp->const.ci;
+		p->konst.ci = lp->konst.ci << rp->konst.ci;
 		break;
 
 	case OPRSHIFT:
-		p->const.ci = lp->const.ci >> rp->const.ci;
+		p->konst.ci = lp->konst.ci >> rp->konst.ci;
 		break;
 
 	case OPCONCAT:
-		ll = lp->vleng->const.ci;
-		lr = rp->vleng->const.ci;
-		p->const.ccp = q = (char *) ckalloc(ll+lr);
+		ll = lp->vleng->konst.ci;
+		lr = rp->vleng->konst.ci;
+		p->konst.ccp = q = (char *) ckalloc(ll+lr);
 		p->vleng = ICON(ll+lr);
-		s = lp->const.ccp;
+		s = lp->konst.ccp;
 		for(i = 0 ; i < ll ; ++i)
 			*q++ = *s++;
-		s = rp->const.ccp;
+		s = rp->konst.ccp;
 		for(i = 0; i < lr; ++i)
 			*q++ = *s++;
 		break;
@@ -1763,24 +1784,24 @@ switch(opcode)
 	case OPPOWER:
 		if( ! ISINT(rtype) )
 			return(e);
-		conspower(&(p->const), lp, rp->const.ci);
+		conspower(&(p->konst), lp, rp->konst.ci);
 		break;
 
 
 	default:
 		if(ltype == TYCHAR)
 			{
-			lcon.ci = cmpstr(lp->const.ccp, rp->const.ccp,
-					lp->vleng->const.ci, rp->vleng->const.ci);
+			lcon.ci = cmpstr(lp->konst.ccp, rp->konst.ccp,
+					lp->vleng->konst.ci, rp->vleng->konst.ci);
 			rcon.ci = 0;
 			mtype = tyint;
 			}
 		else	{
 			mtype = maxtype(ltype, rtype);
-			consconv(mtype, &lcon, ltype, &(lp->const) );
-			consconv(mtype, &rcon, rtype, &(rp->const) );
+			consconv(mtype, &lcon, ltype, &(lp->konst) );
+			consconv(mtype, &rcon, rtype, &(rp->konst) );
 			}
-		consbinop(opcode, mtype, &(p->const), &lcon, &rcon);
+		consbinop(opcode, mtype, &(p->konst), &lcon, &rcon);
 		break;
 	}
 
@@ -1850,16 +1871,16 @@ switch(p->vtype)
 	{
 	case TYSHORT:
 	case TYLONG:
-		p->const.ci = - p->const.ci;
+		p->konst.ci = - p->konst.ci;
 		break;
 
 	case TYCOMPLEX:
 	case TYDCOMPLEX:
-		p->const.cd[1] = - p->const.cd[1];
+		p->konst.cd[1] = - p->konst.cd[1];
 		/* fall through and do the real parts */
 	case TYREAL:
 	case TYDREAL:
-		p->const.cd[0] = - p->const.cd[0];
+		p->konst.cd[0] = - p->konst.cd[0];
 		break;
 	default:
 		fatal1("consnegop: impossible type %d", p->vtype);
@@ -1868,7 +1889,7 @@ switch(p->vtype)
 
 
 
-LOCAL conspower(powp, ap, n)
+conspower(powp, ap, n)
 register union constant *powp;
 struct constblock *ap;
 ftnint n;
@@ -1903,10 +1924,10 @@ if(n < 0)
 		return;
 		}
 	n = - n;
-	consbinop(OPSLASH, type, &x, powp, &(ap->const));
+	consbinop(OPSLASH, type, &x, powp, &(ap->konst));
 	}
 else
-	consbinop(OPSTAR, type, &x, powp, &(ap->const));
+	consbinop(OPSTAR, type, &x, powp, &(ap->konst));
 
 for( ; ; )
 	{
@@ -1924,7 +1945,7 @@ for( ; ; )
 /* do constant operation cp = a op b */
 
 
-LOCAL consbinop(opcode, type, cp, ap, bp)
+consbinop(opcode, type, cp, ap, bp)
 int opcode, type;
 register union constant *ap, *bp, *cp;
 {
@@ -2081,19 +2102,19 @@ switch(p->vtype)
 	{
 	case TYSHORT:
 	case TYLONG:
-		if(p->const.ci > 0) return(1);
-		if(p->const.ci < 0) return(-1);
+		if(p->konst.ci > 0) return(1);
+		if(p->konst.ci < 0) return(-1);
 		return(0);
 
 	case TYREAL:
 	case TYDREAL:
-		if(p->const.cd[0] > 0) return(1);
-		if(p->const.cd[0] < 0) return(-1);
+		if(p->konst.cd[0] > 0) return(1);
+		if(p->konst.cd[0] < 0) return(-1);
 		return(0);
 
 	case TYCOMPLEX:
 	case TYDCOMPLEX:
-		return(p->const.cd[0]!=0 || p->const.cd[1]!=0);
+		return(p->konst.cd[0]!=0 || p->konst.cd[1]!=0);
 
 	default:
 		fatal1( "conssgn(type %d)", p->vtype);
@@ -2104,7 +2125,7 @@ switch(p->vtype)
 char *powint[ ] = { "pow_ii", "pow_ri", "pow_di", "pow_ci", "pow_zi" };
 
 
-LOCAL expptr mkpower(p)
+expptr mkpower(p)
 register struct exprblock *p;
 {
 register expptr q, lp, rp;
@@ -2117,7 +2138,7 @@ rtype = rp->vtype;
 
 if(ISICON(rp))
 	{
-	if(rp->const.ci == 0)
+	if(rp->konst.ci == 0)
 		{
 		frexpr(p);
 		if( ISINT(ltype) )
@@ -2125,7 +2146,7 @@ if(ISICON(rp))
 		else
 			return( putconst( mkconv(ltype, ICON(1))) );
 		}
-	if(rp->const.ci < 0)
+	if(rp->konst.ci < 0)
 		{
 		if( ISINT(ltype) )
 			{
@@ -2133,10 +2154,10 @@ if(ISICON(rp))
 			err("integer**negative");
 			return( errnode() );
 			}
-		rp->const.ci = - rp->const.ci;
+		rp->konst.ci = - rp->konst.ci;
 		p->leftp = lp = fixexpr(mkexpr(OPSLASH, ICON(1), lp));
 		}
-	if(rp->const.ci == 1)
+	if(rp->konst.ci == 1)
 		{
 		frexpr(rp);
 		free(p);
@@ -2183,7 +2204,7 @@ return(q);
 struct dcomplex { double dreal, dimag; };
 
 
-LOCAL zdiv(c, a, b)
+zdiv(c, a, b)
 register struct dcomplex *a, *b, *c;
 {
 double ratio, den;

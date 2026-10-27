@@ -23,8 +23,8 @@ char *s;
 #define BUSY 1
 #define NULL 0
 #define testbusy(p) ((int)(p)&BUSY)
-#define setbusy(p) ((int)(p)+BUSY)
-#define clearbusy(p) ((int)(p)&~BUSY)
+#define setbusy(p) ((struct store *)((char *)(p)+BUSY))
+#define clearbusy(p) ((struct store *)((char *)(p)-BUSY))
 
 struct store { struct store *ptr; };
 
@@ -103,7 +103,7 @@ register struct store *p;
 	ASSERT(p->ptr > allocp && p->ptr <= alloct);
 }
 
-struct { unsigned tag:4, vtype:4;};
+struct tagfield { unsigned tag:4, vtype:4;};
 
 prbusy()
 {
@@ -114,7 +114,8 @@ prbusy()
 			if(testbusy(p->ptr))
 				{
 				printf("busy 0%o, tag %d, type %d, length %d\n",
-					p, p[1].tag, p[1].vtype,
+					p, ((struct tagfield *)(p+1))->tag,
+					((struct tagfield *)(p+1))->vtype,
 					clearbusy(p->ptr) - (int) p - 2 );
 				}
 			q = p;

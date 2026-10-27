@@ -16,6 +16,7 @@
 #define F_LOGIN 5
 
 jmp_buf Sjbuf;
+extern alarmtr();
 #define INVOKE(a, r) ret = a; if (ret<0) return(r);
 /*******
  *	conn(system)

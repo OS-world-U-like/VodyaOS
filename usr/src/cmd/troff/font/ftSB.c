@@ -1,4 +1,4 @@
-char SBw[256-32] {	/*SB Stymie Bold*/
+char SBw[256-32] = {	/*SB Stymie Bold*/
 12,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

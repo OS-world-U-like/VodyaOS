@@ -1,0 +1,6 @@
+build/gen/cpp/pre.y:11.1-7: warning: POSIX Yacc does not support %binary [-Wyacc]
+   11 | %binary EQ NE
+      | ^~~~~~~
+build/gen/cpp/pre.y:12.1-7: warning: POSIX Yacc does not support %binary [-Wyacc]
+   12 | %binary '<' '>' LE GE
+      | ^~~~~~~

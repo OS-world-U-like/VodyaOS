@@ -25,3 +25,7 @@ int	lefteq	= '\0';	/* left in-line delimiter */
 int	righteq	= '\0';	/* right in-line delimiter */
 int	lastchar;	/* last character read by lex */
 int	markline	= 0;	/* 1 if this EQ/EN contains mark or lineup */
+
+/* V7 yacc had yyval as a global; bison makes it local to yyparse.
+   The eqn action functions communicate through it. */
+int yyval;

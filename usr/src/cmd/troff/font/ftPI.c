@@ -1,5 +1,5 @@
 /*Commercial II*/
-char PIw[256-32] {   /*character withs for Palatino Italic 814-008A*/
+char PIw[256-32] = {   /*character withs for Palatino Italic 814-008A*/
 12,      /*space*/
 9,      /*!*/
 00,      /*"*/

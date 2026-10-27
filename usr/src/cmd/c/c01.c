@@ -39,9 +39,9 @@ build(op)
 	 * sizeof gets turned into a number here.
 	 */
 	if (op==SIZEOF) {
-		t1 = cblock(length(p1));
-		t1->type = UNSIGN;
-		*cp++ = t1;
+		p3 = cblock(length(p1));
+		p3->type = UNSIGN;
+		*cp++ = p3;
 		return;
 	}
 	if (op!=AMPER) {
@@ -167,7 +167,7 @@ build(op)
 	} else
 		cvn = cvtab[lintyp(t1)][lintyp(t2)];
 	leftc = (cvn>>4)&017;
-	cvn =& 017;
+	cvn &= 017;
 	t = leftc? t2:t1;
 	if ((t==INT||t==CHAR) && (t1==UNSIGN||t2==UNSIGN))
 		t = UNSIGN;
@@ -192,11 +192,11 @@ build(op)
 		if (t1>=PTR && t1==t2)
 			cvn = 0;
 		if (op!=COLON && (t1>=PTR || t2>=PTR))
-			op =+ MAXP-MAX;
+			op += MAXP-MAX;
 	} else if (dope&RELAT) {
 		if (op>=LESSEQ && (t1>=PTR||t2>=PTR||(t1==UNSIGN||t2==UNSIGN)
 		 && (t==INT||t==CHAR||t==UNSIGN)))
-			op =+ LESSEQP-LESSEQ;
+			op += LESSEQP-LESSEQ;
 		if (cvn==ITP || cvn==PTI)
 			cvn = 0;
 	}
@@ -469,12 +469,12 @@ gblock(n)
 	register int *p;
 
 	p = curbase;
-	if ((curbase =+ n) >= coremax) {
+	if ((curbase += n) >= coremax) {
 		if (sbrk(1024) == -1) {
 			error("Out of space");
 			exit(1);
 		}
-		coremax =+ 1024;
+		coremax += 1024;
 	}
 	return(p);
 }
@@ -529,15 +529,15 @@ struct tnode *ap1, *ap2;
 	switch (op) {
 
 	case PLUS:
-		v1 =+ v2;
+		v1 += v2;
 		break;
 
 	case MINUS:
-		v1 =- v2;
+		v1 -= v2;
 		break;
 
 	case TIMES:
-		v1 =* v2;
+		v1 *= v2;
 		break;
 
 	case DIVIDE:
@@ -547,7 +547,7 @@ struct tnode *ap1, *ap2;
 			v1 = (unsigned)v1 / v2;
 			break;
 		}
-		v1 =/ v2;
+		v1 /= v2;
 		break;
 
 	case MOD:
@@ -557,19 +557,19 @@ struct tnode *ap1, *ap2;
 			v1 = (unsigned)v1 % v2;
 			break;
 		}
-		v1 =% v2;
+		v1 %= v2;
 		break;
 
 	case AND:
-		v1 =& v2;
+		v1 &= v2;
 		break;
 
 	case OR:
-		v1 =| v2;
+		v1 |= v2;
 		break;
 
 	case EXOR:
-		v1 =^ v2;
+		v1 ^= v2;
 		break;
 
 	case NEG:
@@ -581,7 +581,7 @@ struct tnode *ap1, *ap2;
 		break;
 
 	case LSHIFT:
-		v1 =<< v2;
+		v1 <<= v2;
 		break;
 
 	case RSHIFT:
@@ -589,7 +589,7 @@ struct tnode *ap1, *ap2;
 			v1 = (unsigned)v1 >> v2;
 			break;
 		}
-		v1 =>> v2;
+		v1 >>= v2;
 		break;
 
 	case EQUAL:

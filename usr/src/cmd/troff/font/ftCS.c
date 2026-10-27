@@ -1,7 +1,7 @@
 /*
  * Century schoolbook -- Commercial II layout; name CS
  */
-char XXw[256-32] {	/*XX*/
+char XXw[256-32] = {	/*XX*/
 12,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

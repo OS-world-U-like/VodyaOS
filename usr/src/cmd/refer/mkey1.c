@@ -5,7 +5,7 @@ int keycount = 100;
 int labels = 1;
 int minlen = 3;
 extern int comcount;
-char *iglist "XYZ#";
+char *iglist = "XYZ#";
 
 main (argc,argv)
 	char *argv[];
@@ -20,7 +20,7 @@ main (argc,argv)
 
 int i;
 char *name, qn[200];
-char *inlist 0;
+char *inlist = 0;
 
 FILE *f, *ff;
 

@@ -1,5 +1,5 @@
 # include "refer..c"
-static gate 0;
+static int gate = 0;
 static char buff[LLINE];
 output (s)
 	char *s;
@@ -56,7 +56,7 @@ gate=0;
 trimnl(ln)
 	char *ln;
 {
-register char *p ln;
+register char *p = ln;
 while (*p) p++;
 p--;
 if (*p == '\n') *p=0;

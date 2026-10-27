@@ -34,7 +34,7 @@ check()
 increm()
 {
 
-	clktim[mantom] =+ clock();
+	clktim[mantom] += clock();
 	if(mantom)
 		moveno++;
 	mantom = !mantom;
@@ -58,7 +58,7 @@ stage()
 	value = 0;
 	for(i=0; i<64; i++) {
 		a = board[i];
-		value =+ (pval+6)[a];
+		value += (pval+6)[a];
 	}
 	if(value > 150)
 		gval = 1; else
@@ -69,11 +69,11 @@ stage()
 	while(i <= 6) {
 		a = (pval+6)[i];
 		if(a < 0)
-			a =- 50; else
-			a =+ 50;
+			a -= 50; else
+			a += 50;
 		if(a < 0)
 			a = -((-a)/100); else
-			a =/ 100;
+			a /= 100;
 		if(i)
 			(pval+6)[i] = a*100-gval;
 		i++;
@@ -81,7 +81,7 @@ stage()
 	a = 13800;
 	i = 64;
 	while(i--)
-		a =- abs((pval+6)[board[i]]);
+		a -= abs((pval+6)[board[i]]);
 	if(a > 4000)
 		game = 3; else
 	if(a > 2000)
@@ -99,7 +99,7 @@ int *p;
 
 	while(amp != p) {
 		m = amp[3]<<8;
-		m =| amp[4]&0377;
+		m |= amp[4]&0377;
 		(*f)(m, a);
 		if(mantom) {
 			bmove(m);

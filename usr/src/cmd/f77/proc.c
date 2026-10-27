@@ -166,7 +166,7 @@ if(parstate >= INDATA)
 
 /* generate epilogs */
 
-LOCAL epicode()
+epicode()
 {
 register int i;
 
@@ -182,7 +182,7 @@ if(procclass==CLPROC)
 		}
 	else	{
 		putlabel(retlabel);
-		if(multitypes)
+		if(multitype)
 			{
 			typeaddr = autovar(1, TYADDR, NULL);
 			putbranch( cpexpr(typeaddr) );
@@ -208,7 +208,7 @@ else if(procclass != CLBLOCK)
 
 /* generate code to return value of type  t */
 
-LOCAL retval(t)
+retval(t)
 register int t;
 {
 register struct addrblock *p;
@@ -246,7 +246,7 @@ goret(t);
 
 /* Allocate extra argument array if needed. Generate prologs. */
 
-LOCAL procode()
+procode()
 {
 register struct entrypoint *p;
 struct addrblock *argvec;
@@ -282,7 +282,7 @@ prendproc();
  * keep track of return types and labels
  */
 
-LOCAL doentry(ep)
+doentry(ep)
 struct entrypoint *ep;
 {
 register int type;
@@ -303,13 +303,13 @@ impldcl( np = mkname(VL, nounder(XL, ep->entryname->extname) ) );
 type = np->vtype;
 if(proctype == TYUNKNOWN)
 	if( (proctype = type) == TYCHAR)
-		procleng = (np->vleng ? np->vleng->const.ci : (ftnint) 0);
+		procleng = (np->vleng ? np->vleng->konst.ci : (ftnint) 0);
 
 if(proctype == TYCHAR)
 	{
 	if(type != TYCHAR)
 		err("noncharacter entry of character function");
-	else if( (np->vleng ? np->vleng->const.ci : (ftnint) 0) != procleng)
+	else if( (np->vleng ? np->vleng->konst.ci : (ftnint) 0) != procleng)
 		err("mismatched character entry lengths");
 	}
 else if(type == TYCHAR)
@@ -344,7 +344,7 @@ else if(type != TYSUBR)
 	if(nentry == 1)
 		retslot = autovar(1, TYDREAL, NULL);
 	np->vstg = STGAUTO;
-	np->voffset = retslot->memoffset->const.ci;
+	np->voffset = retslot->memoffset->konst.ci;
 	}
 
 for(p = ep->arglist ; p ; p = p->nextp)
@@ -372,7 +372,7 @@ putlabel(ep->entrylabel);
 
 
 
-LOCAL nextarg(type)
+nextarg(type)
 int type;
 {
 int k;
@@ -383,7 +383,7 @@ return(k);
 
 /* generate variable references */
 
-LOCAL dobss()
+dobss()
 {
 register struct hashentry *p;
 register struct nameblock *q;
@@ -458,16 +458,16 @@ if(leng <= 0)
 	return(-1);
 if(q->vdim)
 	if( ISICON(q->vdim->nelt) )
-		leng *= q->vdim->nelt->const.ci;
+		leng *= q->vdim->nelt->konst.ci;
 	else	return(-1);
 if(q->vleng)
 	if( ISICON(q->vleng) )
-		leng *= q->vleng->const.ci;
+		leng *= q->vleng->konst.ci;
 	else 	return(-1);
 return(leng);
 }
 
-LOCAL docommon()
+docommon()
 {
 register struct extsym *p;
 register chainp q;
@@ -494,11 +494,11 @@ for(p = extsymtab ; p<nextext ; ++p)
 			v->voffset = p->extleng;
 			v->vardesc.varno = p - extsymtab;
 			if(type == TYCHAR)
-				size = v->vleng->const.ci;
+				size = v->vleng->konst.ci;
 			else	size = typesize[type];
 			if(t = v->vdim)
 				if( (neltp = t->nelt) && ISCONST(neltp) )
-					size *= neltp->const.ci;
+					size *= neltp->konst.ci;
 				else
 					dclerr("adjustable array in common", v);
 			p->extleng += size;
@@ -512,7 +512,7 @@ for(p = extsymtab ; p<nextext ; ++p)
 
 
 
-LOCAL docomleng()
+docomleng()
 {
 register struct extsym *p;
 
@@ -554,7 +554,7 @@ register struct addrblock *q;
 
 if(t == TYCHAR)
 	if( ISICON(lengp) )
-		leng = lengp->const.ci;
+		leng = lengp->konst.ci;
 	else	{
 		fatal("automatic variable of nonconstant length");
 		}
@@ -596,7 +596,7 @@ if(type==TYUNKNOWN || type==TYERROR)
 
 if(type==TYCHAR)
 	if( ISICON(lengp) )
-		leng = lengp->const.ci;
+		leng = lengp->konst.ci;
 	else	{
 		err("adjustable length");
 		return( errnode() );
@@ -605,7 +605,7 @@ for(oldp = &templist ; p = oldp->nextp ; oldp = p)
 	{
 	q = p->datap;
 	if(q->vtype==type && q->ntempelt==nelt &&
-	    (type!=TYCHAR || q->vleng->const.ci==leng) )
+	    (type!=TYCHAR || q->vleng->konst.ci==leng) )
 		{
 		oldp->nextp = p->nextp;
 		free(p);
@@ -694,7 +694,7 @@ else if(v->vtype == TYUNKNOWN)
 	if( (v->vtype = lengtype(type, length))==TYCHAR && length!=0)
 		v->vleng = ICON(length);
 	}
-else if(v->vtype!=type || (type==TYCHAR && v->vleng->const.ci!=length) )
+else if(v->vtype!=type || (type==TYCHAR && v->vleng->konst.ci!=length) )
 	dclerr("incompatible type declarations", v);
 }
 

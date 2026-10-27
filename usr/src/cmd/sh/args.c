@@ -10,7 +10,7 @@
 #include	"defs.h"
 
 PROC STRING *copyargs();
-LOCAL DOLPTR	dolh;
+ DOLPTR	dolh;
 
 CHAR	flagadr[10];
 
@@ -98,15 +98,16 @@ freeargs(blk)
 	return(argr);
 }
 
-LOCAL STRING *	copyargs(from, n)
+ STRING *	copyargs(from, n)
 	STRING		from[];
 {
-	REG STRING *	np=alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
+	REG struct dolnod *dnp=(struct dolnod *)alloc(sizeof(STRING*)*n+3*BYTESPERWORD);
 	REG STRING *	fp=from;
-	REG STRING *	pp=np;
+	REG STRING *	np;
+	REG STRING *	pp=(STRING *)dnp;
 
-	np->doluse=1;	/* use count */
-	np=np->dolarg;
+	dnp->doluse=1;	/* use count */
+	np=dnp->dolarg;
 	dolv=np;
 
 	WHILE n--

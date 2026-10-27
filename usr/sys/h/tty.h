@@ -56,7 +56,14 @@ struct tty
 	char	t_ispeed;	/* input speed */
 	char	t_ospeed;	/* output speed */
 	union {
-		struct tc;
+		struct {
+			char	t_intrc;	/* interrupt */
+			char	t_quitc;	/* quit */
+			char	t_startc;	/* start output */
+			char	t_stopc;	/* stop output */
+			char	t_eofc;		/* end-of-file */
+			char	t_brkc;		/* input delimiter (like nl) */
+		};
 		struct clist t_ctlq;
 	} t_un;
 };

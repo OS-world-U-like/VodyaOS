@@ -10,11 +10,11 @@
 
 INT		mkfault;
 INT		infile;
-INT		outfile 1;
+INT		outfile = 1;
 INT		maxpos;
 
 CHAR		printbuf[MAXLIN];
-CHAR		*printptr printbuf;
+CHAR		*printptr = printbuf;
 CHAR		*digitptr;
 
 
@@ -34,7 +34,7 @@ eqstr(s1, s2)
 length(s)
 	STRING		s;
 {
-	INT		n 0;
+	INT		n = 0;
 	WHILE *s++ DO n++; OD
 	return(n);
 }
@@ -249,7 +249,7 @@ printoct(o,s)
 	     FI
 	FI
 	FOR i=0;i<=11;i++
-	DO digs[i] = po&7; po =>> 3; OD
+	DO digs[i] = po&7; po >>= 3; OD
 	digs[10] &= 03; digs[11]=0;
 	FOR i=11;i>=0;i--
 	DO IF digs[i] THEN break; FI OD

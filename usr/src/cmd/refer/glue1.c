@@ -1,36 +1,36 @@
 # include "stdio.h"
 # define unopen(fil) {if (fil!=NULL) {fclose(fil); fil=NULL;}}
 extern char refdir[];
-int lmaster 1000;
-int reached 0;
-FILE *fd 0;
+int lmaster = 1000;
+int reached = 0;
+FILE *fd = 0;
 int *hfreq, hfrflg;
-int colevel 0;
-static union {unsigned *a; long *b;} master NULL;
+int colevel = 0;
+static union {unsigned *a; long *b;} master = {0};
 int iflong;
 extern char *fgnames[], **fgnamp;
-int prfreqs 0;
-int typeindex 0;
+int prfreqs = 0;
+int typeindex = 0;
 char usedir[100];
-static int full 1000;
-static int tags 0;
+static int full = 1000;
+static int tags = 0;
 char *sinput, *soutput, *tagout;
-long indexdate 0, gdate();
-int soutlen 1000;
-int taglen 1000;
+long indexdate = 0, gdate();
+int soutlen = 1000;
+int taglen = 1000;
 
 huntmain(argc,argv)
 	char *argv[];
 {
 /* read query from stdin, expect name of indexes in argv[1] */
 static FILE *fa, *fb, *fc;
-char indexname[100], *qitem[100], *rprog 0;
+char indexname[100], *qitem[100], *rprog = 0;
 char grepquery[200];
 static char oldname[30] ;
-static int nhash 0;
-static int maxhash 0;
-int falseflg 0, nitem, nfound, frtbl;
-static long *hpt 0;
+static int nhash = 0;
+static int maxhash = 0;
+int falseflg = 0, nitem, nfound, frtbl;
+static long *hpt = 0;
 # if D1
 fprintf(stderr, "in glue1 argc %d argv %o %o\n", argc, argv[0],argv[1]);
 # endif

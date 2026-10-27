@@ -151,7 +151,7 @@ char **argv;
 	scale /= bufs/sizeof(UNIT);
 	for(i=0;;i++) {
 		register j;
-		unsigned UNIT ccnt;
+		unsigned short ccnt;
 		fread((char *)&ccnt, sizeof(ccnt), 1, pfile);
 		if(feof(pfile))
 			break;
@@ -194,7 +194,7 @@ char **argv;
 	fseek(pfile, pfpos, 0);
 	lastsx = 0.0;
 	for(;;) {
-		unsigned UNIT ccnt;
+		unsigned short ccnt;
 		fread((char *)&ccnt, sizeof(ccnt), 1, pfile);
 		if(feof(pfile))
 			break;

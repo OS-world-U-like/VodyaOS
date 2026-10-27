@@ -1,4 +1,4 @@
-int	center[]
+int	center[] =
 {
 	2,3,4,4,4,4,3,2,
 	3,6,8,8,8,8,6,3,
@@ -16,9 +16,9 @@ int	wheur3();
 int	wheur4();
 int	wheur5();
 int	wheur6();
-int	wheur[]
+int	(*wheur[])() =
 {
-	&wheur1,
+	wheur1,
 	&wheur2,
 	&wheur3,
 	&wheur4,
@@ -33,9 +33,9 @@ int	bheur3();
 int	bheur4();
 int	bheur5();
 int	bheur6();
-int	bheur[]
+int	(*bheur[])() =
 {
-	&bheur1,
+	bheur1,
 	&bheur2,
 	&bheur3,
 	&bheur4,
@@ -44,26 +44,26 @@ int	bheur[]
 	0
 };
 
-int	ipval[]
+int	ipval[] =
 {
 	-3000, -900, -500, -300, -300, -100,
 	0,
 	100, 300, 300, 500, 900, 3000
 };
 
-int	moveno	1;
-int	depth	2;
-int	qdepth	8;
-int	mdepth	4;
-int	flag	033;
-int	eppos	64;
-int	bkpos	4;
-int	wkpos	60;
-int	edge[]
+int	moveno = 1;
+int	depth = 2;
+int	qdepth = 8;
+int	mdepth = 4;
+int	flag = 033;
+int	eppos = 64;
+int	bkpos = 4;
+int	wkpos = 60;
+int	edge[] =
 {
 	040, 020, 010, 0, 0, 1, 2, 4
 };
-int	board[]
+int	board[] =
 {
 	4, 2, 3, 5, 6, 3, 2, 4,
 	1, 1, 1, 1, 1, 1, 1, 1,

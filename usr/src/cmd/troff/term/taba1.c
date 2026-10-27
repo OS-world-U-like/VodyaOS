@@ -31,7 +31,7 @@ struct {
 	char *left;
 	char *codetab[256-32];
 	int zzz;
-	} t {
+	} t = { 
 /*bset*/	0,
 /*breset*/	0177420,
 /*Hor*/		INCH/60,

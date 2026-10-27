@@ -1,4 +1,4 @@
-char Cw[256-32] {	/*Comm I news Condensed made to look like II*/
+char Cw[256-32] = {	/*Comm I news Condensed made to look like II*/
 12,	 /*space*/
 8,	 /*!*/
 0,	 /*"*/

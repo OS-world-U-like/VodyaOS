@@ -15,7 +15,7 @@ s_wdue(a) cilist *a;
 	if(!curunit->uwrt) nowwriting(curunit);
 	return(0);
 }
-c_due(a,flag) cilist *a;
+c_due(a,flagv) cilist *a;
 {
 	if(!init) f_init();
 	if(a->ciunit>=MXUNIT || a->ciunit<0)
@@ -24,7 +24,7 @@ c_due(a,flag) cilist *a;
 	external=1;
 	curunit = &units[a->ciunit];
 	elist=a;
-	if(curunit->ufd==NULL && fk_open(flag,DIR,UNF,a->ciunit) ) err(a->cierr,104,"due");
+	if(curunit->ufd==NULL && fk_open(flagv,DIR,UNF,a->ciunit) ) err(a->cierr,104,"due");
 	cf=curunit->ufd;
 	if(curunit->ufmt) err(a->cierr,102,"cdue")
 	if(!curunit->useek) err(a->cierr,104,"cdue")

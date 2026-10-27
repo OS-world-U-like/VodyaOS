@@ -109,7 +109,7 @@ if(inclp)
 	}
 nextcd = NULL;
 
-if(++nincl >= MAXINCLUDE)
+if(++nincl >= MAXINCLUDES)
 	fatal("includes nested too deep");
 if(name[0] == '\0')
 	fp = stdin;
@@ -219,7 +219,7 @@ fatal1("impossible lexstate %d", lexstate);
 /* NOTREACHED */
 }
 
-LOCAL getcds()
+getcds()
 {
 register char *p, *q;
 
@@ -265,7 +265,7 @@ top:
 	return(STINITIAL);
 }
 
-LOCAL getcd(b)
+getcd(b)
 register char *b;
 {
 register int c;
@@ -360,7 +360,7 @@ initline:
 	return(STINITIAL);
 }
 
-LOCAL crunch()
+crunch()
 {
 register char *i, *j, *j0, *j1, *prvstr;
 int ten, nh, quote;
@@ -481,7 +481,7 @@ lastch = j - 1;
 nextch = s;
 }
 
-LOCAL analyz()
+analyz()
 {
 register char *i;
 
@@ -542,7 +542,7 @@ register char *i;
 
 
 
-LOCAL getkwd()
+getkwd()
 {
 register char *i, *j;
 register struct keylist *pk, *pend;
@@ -587,7 +587,7 @@ for(p = keys ; p->keyname ; ++p)
 	}
 }
 
-LOCAL gettok()
+gettok()
 {
 int havdot, havexp, havdbl;
 int radix;
@@ -831,7 +831,7 @@ LOCAL struct fmtlist  fmts[ ] =
 	0, 0 } ;
 */
 
-LOCAL struct dotlist  dots[ ] =
+struct dotlist  dots[ ] =
 	{
 	"and.", SAND, 
 	"or.", SOR, 
@@ -848,7 +848,7 @@ LOCAL struct dotlist  dots[ ] =
 	"eqv.", SEQV, 
 	0, 0 } ;
 
-LOCAL struct keylist  keys[ ] =
+struct keylist  keys[ ] =
 	{
 	"assign",  SASSIGN,
 	"automatic",  SAUTOMATIC,

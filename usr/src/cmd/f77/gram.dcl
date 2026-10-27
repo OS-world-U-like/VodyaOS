@@ -28,7 +28,7 @@ type:	  typespec lengspec
 	;
 
 typespec:  typename
-		{ varleng = ($1<0 || $1==TYLONG ? 0 : typesize[$1]); }
+		{ varleng = ($1<0 || $1==TYLONG ? 0 : typesize[(ftnint)$1]); }
 	;
 
 typename:    SINTEGER	{ $$ = TYLONG; }
@@ -53,7 +53,7 @@ lengspec:
 			$$ = 0;
 			dclerr("length must be an integer constant", 0);
 			}
-		  else $$ = $2->const.ci;
+		  else $$ = $2->konst.ci;
 		}
 	| SSTAR SLPAR SSTAR SRPAR
 		{ $$ = 0; }
@@ -193,7 +193,7 @@ var:	  name dims
 	;
 
 datavar:	  lhs
-		{ ptr np;
+		{ struct nameblock *np;
 		  vardcl(np = $1->namep);
 		  if(np->vstg == STGBSS)
 			np->vstg = STGINIT;

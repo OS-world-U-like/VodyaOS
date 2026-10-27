@@ -186,21 +186,23 @@ register dev;
 	}
 }
 
-struct { char lobyte, hibyte;};
 lpsgtty(dev, v)
 register *v;
 {
 	register struct lp *lp;
+	register char *cp;
 
 	lp = &lp_dt[dev&07];
 	if (v) {
-		v->lobyte = lp->flag;
-		v->hibyte = lp->ind;
+		cp = (char *)v;
+		cp[0] = lp->flag;
+		cp[1] = lp->ind;
 		v[1] = lp->line;
 		v[2] = lp->col;
 	} else {
-		lp->flag = (u.u_arg[0].lobyte&077)|OPEN;
-		lp->ind = u.u_arg[0].hibyte&017;
+		cp = (char *)u.u_arg;
+		lp->flag = (cp[0]&077)|OPEN;
+		lp->ind = cp[1]&017;
 		lp->line = u.u_arg[1];
 		lp->col = u.u_arg[2];
 	}

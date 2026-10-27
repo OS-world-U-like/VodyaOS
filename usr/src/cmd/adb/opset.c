@@ -36,7 +36,7 @@ struct optab {
 	int	val;
 	int	itype;
 	char	*iname;
-} optab[] {
+} optab[] = {
 	0107777, 0010000, DOUBLE, "mov",
 	0107777, 0020000, DOUBLE, "cmp",
 	0107777, 0030000, DOUBLE, "bit",
@@ -131,7 +131,7 @@ struct optab {
 SYSTAB {
 	int	argc;
 	char	*sname;
-} systab[] {
+} systab[] = {
 	1, "indir",
 	0, "exit",
 	0, "fork",
@@ -198,7 +198,7 @@ SYSTAB {
 	0, "63",
 };
 
-STRING	regname[] { "r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc"};
+STRING	regname[] = { "r0", "r1", "r2", "r3", "r4", "r5", "sp", "pc"};
 
 POS	type, space, incp;
 

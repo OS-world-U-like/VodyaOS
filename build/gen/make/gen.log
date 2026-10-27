@@ -1,0 +1,18 @@
+build/gen/make/pre.y:25.26: warning: stray ',' treated as white space [-Wother]
+   25 | %type <yshblock> SHELLINE, shlist, shellist
+      |                          ^
+build/gen/make/pre.y:25.18-25: warning: POSIX yacc reserves %type to nonterminals [-Wyacc]
+   25 | %type <yshblock> SHELLINE, shlist, shellist
+      |                  ^~~~~~~~
+build/gen/make/pre.y:25.34: warning: stray ',' treated as white space [-Wother]
+   25 | %type <yshblock> SHELLINE, shlist, shellist
+      |                                  ^
+build/gen/make/pre.y:26.24: warning: stray ',' treated as white space [-Wother]
+   26 | %type <ynameblock> NAME, namelist
+      |                        ^
+build/gen/make/pre.y:26.20-23: warning: POSIX yacc reserves %type to nonterminals [-Wyacc]
+   26 | %type <ynameblock> NAME, namelist
+      |                    ^~~~
+build/gen/make/pre.y:27.26: warning: stray ',' treated as white space [-Wother]
+   27 | %type <ydepblock> deplist, dlist
+      |                          ^

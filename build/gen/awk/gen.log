@@ -1,0 +1,2 @@
+build/gen/awk/pre.y: warning: 92 shift/reduce conflicts [-Wconflicts-sr]
+build/gen/awk/pre.y: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples

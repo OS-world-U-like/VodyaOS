@@ -38,7 +38,7 @@ fprintf(stderr, "Execution resumes after PAUSE.\n");
 
 
 
-static waitpause()
+waitpause()
 {
 return;
 }

@@ -8,14 +8,14 @@ struct wst { char *tx; int ct; } ;
 # define TSIZE HASHF*ZIPF*NW
 int HSIZE;
 static struct wst word[TSIZE];
-static char tbuf[NW*ZIPF*WLEN], *tp tbuf;
+static char tbuf[NW*ZIPF*WLEN], *tp = tbuf;
 # define NF 10
 
 freqwd ( fn, wd, nin )
 	char *fn[], *wd[];
 {
 	FILE *fi[NF];
-	int nw 0, i, any, nf, j, wexch(), wcomp();
+	int nw = 0, i, any, nf, j, wexch(), wcomp();
 	char tw[20];
 for(HSIZE=TSIZE; !prime(HSIZE); HSIZE--);
 for(nf=0; fn[nf] && nf<NF; nf++)
@@ -75,7 +75,7 @@ return ( -h );
 hash (s)
 	char *s;
 {
-int k 0, c 0, i 0;
+int k = 0, c = 0, i = 0;
 while ( c = *s++ )
 	k ^= (c << (i++%5) );
 return (k>0 ? k : -k);
@@ -85,7 +85,7 @@ gw (f, t)
 	char *t;
 	FILE *f;
 {
-int start 1, oldc ' ', c;
+int start = 1, oldc = ' ', c;
 if (f==NULL) return (0);
 while ( (c=getc(f)) != EOF)
 	{

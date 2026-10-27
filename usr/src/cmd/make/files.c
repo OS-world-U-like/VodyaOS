@@ -239,7 +239,7 @@ return(thisdbl);
 
 /* stolen from glob through find */
 
-static amatch(s, p)
+amatch(s, p)
 char *s, *p;
 {
 	register int cc, scc, k;
@@ -280,7 +280,7 @@ char *s, *p;
 	return(0);
 }
 
-static umatch(s, p)
+umatch(s, p)
 char *s, *p;
 {
 	if(*p==0) return(1);

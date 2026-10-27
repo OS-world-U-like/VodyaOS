@@ -102,7 +102,7 @@ cfunc()
 	register sloc;
 
 	sloc = isn;
-	isn =+ 2;
+	isn += 2;
 	outcode("BBS", PROG, RLABEL, funcsym->name);
 	if (proflg)
 		outcode("BN", PROFIL, isn++);
@@ -186,7 +186,7 @@ struct hshtab *anp;
 				error("No strings in automatic");
 			peeksym = -1;
 			putstr(0, flex?10000:nel);
-			ninit =+ nchstr;
+			ninit += nchstr;
 			o = symbol();
 			break;
 		} else if (np->type==STRUCT) {
@@ -289,7 +289,7 @@ struct hshtab *anp;
 	np = anp;
 	if (np->hflag&FINIT)
 		error("%s multiply defined", np->name);
-	np->hflag =| FINIT;
+	np->hflag |= FINIT;
 }
 
 /*
@@ -497,23 +497,25 @@ stmt:
 	case NAME:
 		if (nextchar()==':') {
 			peekc = 0;
-			o1 = csym;
-			if (o1->hclass>0) {
-				if (o1->hblklev==0) {
-					pushdecl(o1);
-					o1->hoffset = 0;
-				} else {
-					defsym = o1;
-					redec();
-					goto stmt;
+			{
+				struct hshtab *sp = csym;
+				if (sp->hclass>0) {
+					if (sp->hblklev==0) {
+						pushdecl(sp);
+						sp->hoffset = 0;
+					} else {
+						defsym = sp;
+						redec();
+						goto stmt;
+					}
 				}
+				sp->hclass = STATIC;
+				sp->htype = ARRAY;
+				sp->hflag |= FLABL;
+				if (sp->hoffset==0)
+					sp->hoffset = isn++;
+				label(sp->hoffset);
 			}
-			o1->hclass = STATIC;
-			o1->htype = ARRAY;
-			o1->hflag =| FLABL;
-			if (o1->hoffset==0)
-				o1->hoffset = isn++;
-			label(o1->hoffset);
 			goto stmt;
 		}
 	}
@@ -639,8 +641,8 @@ pswitch()
 /*
  * Structure resembling a block for a register variable.
  */
-struct	hshtab	hreg	{ REG, 0, 0, NULL, NULL, 0 };
-struct	tnode	areg	{ NAME, 0, NULL, NULL, &hreg};
+struct	hshtab	hreg	= { REG, 0, 0, NULL, NULL, 0 };
+struct	tnode	areg	= { NAME, 0, NULL, NULL, &hreg};
 funchead()
 {
 	register pl;
@@ -659,7 +661,7 @@ funchead()
 			cs->htype =- (ARRAY-PTR);	/* set ptr */
 			cs->subsp++;		/* pop dims */
 		}
-		pl =+ rlength(cs);
+		pl += rlength(cs);
 		if (cs->hclass==AREG && (hreg.hoffset=goodreg(cs))>=0) {
 			bstack[0] = &areg;
 			bstack[1] = nblock(cs);
@@ -719,7 +721,7 @@ blkend()
 			if ((ncs = cs->hpdown)==NULL) {
 				cs->name[0] = '\0';
 				hshused--;
-				cs->hflag =& FKEYW;
+				cs->hflag &= FKEYW;
 			} else {
 				cpysymb(cs, ncs);
 			}
@@ -737,8 +739,8 @@ blkend()
 			hshused--;
 			i = ncs->hflag;
 			cpysymb(ncs, cs);
-			ncs->hflag =| i&FKEYW;
-			cs->hflag =& FKEYW;
+			ncs->hflag |= i&FKEYW;
+			cs->hflag &= FKEYW;
 		}
 		if (ncs->hblklev>1 || (ncs->hblklev>0 && ncs->hclass==EXTERN))
 			ncs->hblklev--;

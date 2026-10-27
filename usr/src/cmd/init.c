@@ -35,6 +35,8 @@ int	fi;
 char	tty[20];
 jmp_buf	sjbuf;
 
+int	reset();
+
 main()
 {
 	int reset();

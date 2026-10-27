@@ -1,4 +1,4 @@
-char W10[256-32] {	/*Genevia Regular Italic (GI) widths #803-033B*/
+char W10[256-32] = {	/*Genevia Regular Italic (GI) widths #803-033B*/
 13,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

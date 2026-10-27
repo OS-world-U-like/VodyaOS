@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char Gw[256-32] {	/*Geneva Regular widths*/
+char Gw[256-32] = {	/*Geneva Regular widths*/
 12,	 /*space*/
 12,	 /*!*/
 0,	 /*"*/

@@ -1,4 +1,4 @@
-char *xxxvers[] = "\nFORTRAN 77 PASS 1, VERSION 1.21,  20 APRIL 1979\n";
+char *xxxvers = "\nFORTRAN 77 PASS 1, VERSION 1.21,  20 APRIL 1979\n";
 
 #include "defs"
 
@@ -145,7 +145,7 @@ exit(k);
 }
 
 
-LOCAL FILEP opf(fn)
+FILEP opf(fn)
 char *fn;
 {
 FILEP fp;
@@ -158,7 +158,7 @@ fatal1("cannot open intermediate file %s", fn);
 
 
 
-LOCAL clfiles()
+clfiles()
 {
 clf(&textfile);
 clf(&asmfile);

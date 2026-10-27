@@ -1,7 +1,11 @@
 # include "stdio.h"
 # include "ctype.h"
 
-	static int eof 0;
+	extern int minlen, keycount, labels;
+	extern int wholefile;
+	extern char *iglist;
+
+	static int eof = 0;
 	static long lp, lim;
 	static int alph, used, prevc;
 	static char *p, key[20];
@@ -14,11 +18,8 @@ dofile(f, name)
 /* read file f & spit out keys & ptrs */
 # define MAXLINE 500
 char line[MAXLINE], *s;
-extern int minlen, keycount, labels;
 int c;
 long grec();
-extern int wholefile;
-extern char *iglist;
 alph=used=prevc=eof=0;
 
 lp=0;
@@ -68,8 +69,8 @@ long grec (s, f)
 	FILE *f;
 {
 	char tm[200];
-	int curtype 0;
-	long len 0L, tlen 0L;
+	int curtype = 0;
+	long len = 0L, tlen = 0L;
 	extern int wholefile;
 	if (eof) return(0);
 	*s = 0;
@@ -95,7 +96,7 @@ long grec (s, f)
 trimnl(ln)
 	char *ln;
 {
-register char *p ln;
+register char *p = ln;
 while (*p) p++;
 p--;
 if (*p == '\n') *p=0;

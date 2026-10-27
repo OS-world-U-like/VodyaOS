@@ -1,8 +1,9 @@
 # include "stdio.h"
 extern char *soutput, *tagout, usedir[];
 
+union ptr {unsigned *a; long *b;};
 result(master, nf, fc)
-	union ptr {unsigned *a; long *b;} *master;
+	union ptr master;
 	FILE *fc;
 {
 int i, c;

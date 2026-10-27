@@ -303,7 +303,7 @@ if(profileflag)
 	p2pass(sprintf(textline, "\tsub\t$.F%d,sp", procno));
 #else
 	if(profileflag)
-		p2op2(P2PROFILE, proflab);
+		p2op2(P2PROFIL, proflab);
 	p2op(P2SAVE);
 	p2op2(P2SETSTK, ( (((int) autoleng)+1) & ~01) );
 #endif
@@ -312,7 +312,7 @@ if(argvec == NULL)
 	addreg(argloc = 4);
 else
 	{
-	addreg( argloc = argvec->memoffset->const.ci );
+	addreg( argloc = argvec->memoffset->konst.ci );
 	if(proctype == TYCHAR)
 		{
 		mvarg(TYADDR, 0, chslot);

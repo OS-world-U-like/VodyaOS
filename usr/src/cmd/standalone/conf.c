@@ -36,7 +36,7 @@ int	nullsys();
 int	tmstrategy(), tmrew(), tmopen();
 int	htstrategy(), htopen(),htclose();
 int	hpstrategy();
-struct devsw devsw[] {
+struct devsw devsw[] = {
 	"rp",	rpstrategy,	nullsys,	nullsys,
 	"hp",	hpstrategy,	nullsys,	nullsys,
 	"rk",	rkstrategy,	nullsys,	nullsys,

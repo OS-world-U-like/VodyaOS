@@ -19,7 +19,7 @@ setup()
 		switch(c = getchar()) {
 
 		case 'K':
-			nkng =- 100;
+			nkng -= 100;
 			c = 6;
 			bkp = p-bd;
 			break;
@@ -78,7 +78,7 @@ setup()
 		case '6':
 		case '7':
 		case '8':
-			p =+ c-'0';
+			p += c-'0';
 			goto loop;
 
 		case ' ':
@@ -120,15 +120,15 @@ setup()
 	flag = 0;
 	if(wkpos == 60) {
 		if(board[56] == -4)
-			flag =| 2;
+			flag |= 2;
 		if(board[63] == -4)
-			flag =| 1;
+			flag |= 1;
 	}
 	if(bkpos == 4) {
 		if(board[0] == 4)
-			flag =| 020;
+			flag |= 020;
 		if(board[7] == 4)
-			flag =| 010;
+			flag |= 010;
 	}
 	printf("Setup successful\n");
 }

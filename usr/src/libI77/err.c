@@ -23,8 +23,7 @@ int recpos;	/*place in current record*/
 int cursor,scale;
 
 /*error messages*/
-char *F_err[]
-{
+char *F_err[] = {
 	"error in format",
 	"illegal unit number",
 	"formatted io not allowed",

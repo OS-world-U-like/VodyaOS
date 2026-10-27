@@ -1,5 +1,5 @@
 /*Geneva Medium (similar to Helvetica Medium)*/
-char W11[256-32] {	/*Geneva Medium widths*/
+char W11[256-32] = {	/*Geneva Medium widths*/
 14,	 /*space*/
 14,	 /*!*/
 0,	 /*"*/

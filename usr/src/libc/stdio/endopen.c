@@ -52,7 +52,7 @@ _endopen(file, mode, iop)
 	return(iop);
 }
 
-static int
+int
 create(file, rw)
 	register char *file;
 	int rw;

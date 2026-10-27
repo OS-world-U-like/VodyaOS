@@ -252,6 +252,9 @@ char **linesptr	= builtin;
 FILE * fin;
 int firstrd	= 0;
 
+extern int yylineno;
+extern char *zznextc;
+
 
 rddescf(descfile)
 char *descfile;

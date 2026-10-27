@@ -1,4 +1,6 @@
 %{#include "defs"
+extern int yylineno;
+extern char *zznextc;
 %}
 
 %term NAME SHELLINE START MACRODEF COLON DOUBLECOLON GREATER

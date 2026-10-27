@@ -23,7 +23,7 @@ wheur1()
 	p3 = lmp;
 	lmp = p1;
 	i = p2-p3;
-	i =>> 1;
+	i >>= 1;
 	if(amp[-2])
 		board[amp[-3]] = pto;
 	return(i);
@@ -43,15 +43,15 @@ wheur2()
 	 * minor pieces out
 	 * knights before bishops
 	 */
-	i =+ 9*((board[57] != -2)+
+	i += 9*((board[57] != -2)+
 		(board[62] != -2));
-	i =+ 8*((board[58] != -3)+
+	i += 8*((board[58] != -3)+
 		(board[61] != -3));
 	/*
 	 * blocked central pawns
 	 */
-	if(board[51] == -1 && board[51-8]!=0) i =- 10;
-	if(board[52] == -1 && board[52-8]!=0) i =- 10;
+	if(board[51] == -1 && board[51-8]!=0) i -= 10;
+	if(board[52] == -1 && board[52-8]!=0) i -= 10;
 	return(i);
 }
 
@@ -68,12 +68,12 @@ wheur3()
 	 * queenside ability
 	 */
 	if(flag&02 && board[48]== -1 && board[49]== -1 && board[50]== -1)
-		i =+ 20;
+		i += 20;
 	/*
 	 *  kingside ability
 	 */
 	if(flag&01 && board[53]== -1 && board[54]== -1 && board[55]== -1)
-		i =+ 20;
+		i += 20;
 	/*
 	 * if both
 	 */
@@ -86,11 +86,11 @@ wheur3()
 	if(wkpos==58)
 		if(board[50]== -1 && (board[48]== -1 || board[48-8]== -1) &&
 			(board[49]== -1 || board[49-8]== -1))
-				i =+ 40;
+				i += 40;
 	if(wkpos==62)
 		if(board[53]== -1 && (board[54]== -1 || board[54-8]== -1) &&
 			(board[55]== -1 || board[55-8]== -1))
-				i =+ 40;
+				i += 40;
 	return(i);
 }
 
@@ -152,7 +152,7 @@ wheur5()
 	if(game < 2) {
 		i = 64;
 		while(i--)
-			control[i] =+ center[i];
+			control[i] += center[i];
 	}
 	if(mantom) {
 		if((flag&03)==0)
@@ -170,8 +170,8 @@ wheur5()
 		while(k = attacv[j++]) {
 			d = (pval+6)[k];
 			if(d < 0)
-				s =- n/(-d); else
-				s =+ n/d;
+				s -= n/(-d); else
+				s += n/d;
 		}
 	}
 	if(amp[-2])
@@ -191,7 +191,7 @@ wheur6()
 	*amp++ = -1;
 	if(wattack(bkpos))
 		if(mate(2, 0))
-			i =+ 15;
+			i += 15;
 	amp--;
 	return(i);
 }

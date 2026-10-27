@@ -45,7 +45,7 @@ for(i = 0 ; i < nequiv ; ++i)
 			}
 		else	offp = ICON(0);
 		if(ISICON(offp))
-			offset = q->eqvoffset = offp->const.ci;
+			offset = q->eqvoffset = offp->konst.ci;
 		else	{
 			dclerr("nonconstant subscript in equivalence ", np);
 			np = NULL;
@@ -135,7 +135,7 @@ for(i = 0 ; i < nequiv ; ++i)
 
 /* put equivalence chain p at common block comno + comoffset */
 
-LOCAL eqvcommon(p, comno, comoffset)
+eqvcommon(p, comno, comoffset)
 struct equivblock *p;
 int comno;
 ftnint comoffset;
@@ -199,7 +199,7 @@ p->eqvbottom = p->eqvtop = 0;
  * adjust offsets of ovarno elements and top and bottom of nvarno chain
  */
 
-LOCAL eqveqv(nvarno, ovarno, delta)
+eqveqv(nvarno, ovarno, delta)
 int ovarno, nvarno;
 ftnint delta;
 {
@@ -232,7 +232,7 @@ p->equivs = NULL;
 
 
 
-LOCAL freqchain(p)
+freqchain(p)
 register struct equivblock *p;
 {
 register struct eqvchain *q, *oq;
@@ -249,7 +249,7 @@ p->equivs = NULL;
 
 
 
-LOCAL nsubs(p)
+nsubs(p)
 register struct listblock *p;
 {
 register int n;

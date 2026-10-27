@@ -1,16 +1,16 @@
 # include "what..c"
 struct filans files[NFILES];
 char fnames[NAMES];
-int relfeed 0;
+int relfeed = 0;
 char *rb[NFEED];
-char rbb[200], *rbp rbb;;
+char rbb[200], *rbp = rbb;
 
 main(argc,argv)
 	char *argv[];
 {
 	char *s, *t, *xargv[50], *wd[50];
 	struct filans *af;
-	int xargc 0, nw, nf, i;
+	int xargc = 0, nw, nf, i;
 while (argc>1 && argv[1][0]=='-')
 	{
 	switch(argv[1][1])
@@ -73,8 +73,8 @@ wrdoc ( np, argc, argv, relfeed )
 	struct filans *af;
 	char *s, *t, buf[200];
 	int eval, k, pid;
-	FILE *rf NULL;
-	FILE *ans NULL;
+	FILE *rf = NULL;
+	FILE *ans = NULL;
 	pid=getpid();
 	for(af=files; af<files+np; af++)
 		{
@@ -125,7 +125,7 @@ return(0);
 str6cmp(s, t)
 	char *s, *t;
 {
-int i 0, c;
+int i = 0, c;
 while ( (c= *s++ ) == ( *t++))
 	if (c==0 || ++i ==6)
 		return(0);

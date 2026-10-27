@@ -11,12 +11,12 @@ newkeys (outf, inf, recf, nhash, fd, iflong)
 
 # define LINESIZ 1250
 long lp, ftell();
-long ld 0; int ll 0, lt 0;
+long ld = 0; int ll = 0, lt = 0;
 char line[LINESIZ];
 char key[30], bkeys[40];
 char *p, *s;
 char *keyv[500];
-int i, nk, ndoc 0, more 0, c;
+int i, nk, ndoc = 0, more = 0, c;
 
 lp = ftell (recf);
 while (fgets(line, LINESIZ, inf))

@@ -15,8 +15,8 @@ struct addrblock *nextdata();
 
 if(repp == NULL)
 	nrep = 1;
-else if (ISICON(repp) && repp->const.ci >= 0)
-	nrep = repp->const.ci;
+else if (ISICON(repp) && repp->konst.ci >= 0)
+	nrep = repp->konst.ci;
 else
 	{
 	err("invalid repetition count in DATA statement");
@@ -73,7 +73,7 @@ while(curdtp)
 		if(ip->implb==NULL || ip->impub==NULL || ip->varnp==NULL)
 			fatal1("bad impldoblock 0%o", ip);
 		if(ip->isactive)
-			ip->varvp->const.ci += ip->impdiff;
+			ip->varvp->konst.ci += ip->impdiff;
 		else
 			{
 			q = fixtype(cpexpr(ip->implb));
@@ -86,7 +86,7 @@ while(curdtp)
 				q = fixtype(cpexpr(ip->impstep));
 				if( ! ISICON(q) )
 					goto doerr;
-				ip->impdiff = q->const.ci;
+				ip->impdiff = q->konst.ci;
 				frexpr(q);
 				}
 			else
@@ -95,7 +95,7 @@ while(curdtp)
 			q = fixtype(cpexpr(ip->impub));
 			if(! ISICON(q))
 				goto doerr;
-			ip->implim = q->const.ci;
+			ip->implim = q->konst.ci;
 			frexpr(q);
 
 			ip->isactive = YES;
@@ -107,8 +107,8 @@ while(curdtp)
 			rp->rpltag = TCONST;
 			}
 
-		if( (ip->impdiff>0 && (ip->varvp->const.ci <= ip->implim))
-		 || (ip->impdiff<0 && (ip->varvp->const.ci >= ip->implim)) )
+		if( (ip->impdiff>0 && (ip->varvp->konst.ci <= ip->implim))
+		 || (ip->impdiff<0 && (ip->varvp->konst.ci >= ip->implim)) )
 			{ /* start new loop */
 			curdtp = ip->datalist;
 			goto next;
@@ -133,11 +133,11 @@ while(curdtp)
 		q = mkaddr(np);
 		off = typesize[np->vtype] * curdtelt;
 		if(np->vtype == TYCHAR)
-			off *= np->vleng->const.ci;
+			off *= np->vleng->konst.ci;
 		q->memoffset = mkexpr(OPPLUS, q->memoffset, mkintcon(off) );
 		if( (neltp = np->vdim->nelt) && ISCONST(neltp))
 			{
-			if(++curdtelt < neltp->const.ci)
+			if(++curdtelt < neltp->konst.ci)
 				skip = NO;
 			}
 		else
@@ -152,7 +152,7 @@ while(curdtp)
 		}
 	if(q->vtype == TYCHAR)
 		if(ISICON(q->vleng))
-			*elenp = q->vleng->const.ci;
+			*elenp = q->vleng->konst.ci;
 		else	{
 			err("initialization of string of nonconstant length");
 			continue;
@@ -165,9 +165,9 @@ while(curdtp)
 		*vlenp = eqvclass[np->vardesc.varno].eqvleng;
 	else	{
 		*vlenp =  (np->vtype==TYCHAR ?
-				np->vleng->const.ci : typesize[np->vtype]);
+				np->vleng->konst.ci : typesize[np->vtype]);
 		if(np->vdim)
-			*vlenp *= np->vdim->nelt->const.ci;
+			*vlenp *= np->vdim->nelt->konst.ci;
 		}
 	return(q);
 
@@ -187,7 +187,7 @@ return(NULL);
 
 
 
-LOCAL setdata(varp, valp, elen, vlen)
+setdata(varp, valp, elen, vlen)
 struct addrblock *varp;
 ftnint elen, vlen;
 struct constblock *valp;
@@ -213,7 +213,7 @@ while(t < varname+XL+1)
 	*t++ = ' ';
 varname[XL+1] = '\0';
 
-offset = varp->memoffset->const.ci;
+offset = varp->memoffset->konst.ci;
 type = varp->vtype;
 valtype = valp->vtype;
 if(type!=TYCHAR && valtype==TYCHAR)
@@ -231,8 +231,8 @@ else if( (type==TYCHAR && valtype!=TYCHAR) ||
 	}
 if(type != TYCHAR)
 	if(valtype == TYUNKNOWN)
-		con.ci = valp->const.ci;
-	else	consconv(type, &con, valtype, &valp->const);
+		con.ci = valp->konst.ci;
+	else	consconv(type, &con, valtype, &valp->konst);
 
 k = 1;
 switch(type)
@@ -266,16 +266,16 @@ switch(type)
 		break;
 
 	case TYCHAR:
-		k = valp->vleng->const.ci;
+		k = valp->vleng->konst.ci;
 		if(elen < k)
 			k = elen;
 
 		for(i = 0 ; i < k ; ++i)
 			{
 			fprintf(initfile, datafmt, varname, offset++, vlen, TYCHAR);
-			fprintf(initfile, "\t%d\n", valp->const.ccp[i]);
+			fprintf(initfile, "\t%d\n", valp->konst.ccp[i]);
 			}
-		k = elen - valp->vleng->const.ci;
+		k = elen - valp->vleng->konst.ci;
 		while( k-- > 0)
 			{
 			fprintf(initfile, datafmt, varname, offset++, vlen, TYCHAR);

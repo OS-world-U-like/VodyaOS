@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char Iw[256-32] {	/*Times Italic widths*/
+char Iw[256-32] = {	/*Times Italic widths*/
 12,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

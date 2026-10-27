@@ -1,5 +1,5 @@
 /*Commercial II*/
-char PAw[256-32] {   /*character withs for Palatino 814-007A*/
+char PAw[256-32] = {   /*character withs for Palatino 814-007A*/
 12,      /*space*/
 12,      /*!*/
 0,      /*"*/

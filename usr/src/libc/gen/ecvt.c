@@ -24,7 +24,7 @@ int ndigits, *decpt, *sign;
 	return(cvt(arg, ndigits, decpt, sign, 0));
 }
 
-static char*
+char*
 cvt(arg, ndigits, decpt, sign, eflag)
 double arg;
 int ndigits, *decpt, *sign;

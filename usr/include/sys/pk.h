@@ -1,12 +1,21 @@
+/*
+ * six-byte packet header for asynch lines.
+ * headers for other devices take up the same
+ * or less space.  If this changes the header
+ * struct will have to become a union.
+ */
 struct header {
-	char	sync;
-	char	ksize;
-	unsigned short sum;
-	char	cntl;
-	char	ccntl;
+	char	sync;		/* sync byte */
+	char	ksize;		/* encoded packet size */
+	unsigned short sum;	/* block check of data packet */
+	char	cntl;		/* control byte */
+	char	ccntl;		/* block check of header */
 };
 #define	HDRSIZ	6
 
+/*
+ * Control structure for a packet driver connection.
+ */
 struct pack {
 	short	p_state;	/* line state */
 	short	p_bits;		/* mask for getepack */
@@ -16,7 +25,8 @@ struct pack {
 	struct	header p_ohbuf; /* output header */
 	char	*p_rptr;
 	char	p_mode;
-	char	**p_ipool;
+	char	**p_ipool;	/* head link to input buffer pool */
+	char	**p_io;		/* input buffer given to driver */
 	char	p_xcount;	/* # active output buffers */
 	char	p_rcount;
 	char	p_nout,p_tout;
@@ -29,7 +39,7 @@ struct pack {
 	char	p_msg;		/* control msg */
 	char	p_rmsg;		/* repeated control msg */
 	char	p_ps,p_pr;	/* last packet sent, recv'd */
-	char	p_rpr;
+	char	p_rpr;		/* copy of remote pr */
 	char	p_nxtps;	/* next output seq number */
 	char	p_imap;		/* bit map of input buffers */
 	char	p_pscopy;	/* newest output packet */
@@ -44,13 +54,15 @@ struct pack {
 #define	CHECK	0125252
 #define	SYN	020
 #define	MOD8	7
-#define	ISCNTL(a)	((a & 0300)==0)
+#define	NOTCNTL(a)	(a & 0300)
 #define	MIN(a,b)	((a<b)? a:b)
 
 char	next[8];
 char	mask[8];
 int	npbits;
 int	pkactive;
+int	pkzot;
+int	pkdisc;
 
 /*
  * driver state
@@ -69,6 +81,10 @@ int	pkactive;
 #define	RCLOSE	04000
 #define	BADFRAME 020000
 
+/*
+ * modes
+ */
+#define	SLOWMODE	0100
 /*
  * io buffer states
  */
@@ -119,3 +135,16 @@ struct	piocb {
 
 int pkdebug;
 int pksizes[];
+
+#define	Pwrite	1
+#define	Poutput	1
+#define	Pxint	1
+
+
+#define	Print	01
+#define	Prend	01
+#define	Pacc	01
+#define	Pread	01
+
+int	*PTRACE;
+

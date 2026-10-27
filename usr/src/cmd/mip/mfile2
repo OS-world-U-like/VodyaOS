@@ -155,34 +155,17 @@ union ndu {
 		char name[NCHNAM];
 		NODE *left;
 		NODE *right;
-		};
-	
-	struct {
-		int op;
-		int rall;
-		TWORD type;
-		int su;
-		char name[NCHNAM];
 		CONSZ lval;
 		int rval;
-		};
-	
-	struct {
-		int op, rall;
-		TWORD type;
-		int su;
 		int label;  /* for use with branching */
-		};
-
-	struct {
-		int op, rall;
-		TWORD type;
-		int su;
 		int stsize;  /* sizes of structure objects */
 		int stalign;  /* alignment of structure objects */
+		int cdim;
+		int csiz;
+		double dval;
 		};
 
-	};
+	};;
 #endif
 
 extern NODE node[];

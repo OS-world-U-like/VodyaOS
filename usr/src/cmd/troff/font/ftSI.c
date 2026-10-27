@@ -1,4 +1,4 @@
-char SIw[256-32] {	/*SI Stymie Medium Italic*/
+char SIw[256-32] = {	/*SI Stymie Medium Italic*/
 12,	 /*space*/
 11,	 /*!*/
 0,	 /*"*/

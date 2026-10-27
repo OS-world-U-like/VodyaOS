@@ -1,10 +1,10 @@
 # include "stdio.h"
-char *comname "/usr/lib/eign";
-static int cgate 0;
+char *comname = "/usr/lib/eign";
+static int cgate = 0;
 extern char *comname;
 # define COMNUM 500
 # define COMTSIZE 997
-int comcount 100;
+int comcount = 100;
 static char cbuf[COMNUM*9];
 static char *cwds[COMTSIZE];
 static char *cbp;

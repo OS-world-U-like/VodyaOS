@@ -27,8 +27,8 @@ loop:
 			printf("bad input\n");
 			goto loop0;
 		}
-		sbuf[0] =+ 'a'-'1';
-		sbuf[2] =+ 'a'-'1';
+		sbuf[0] += 'a'-'1';
+		sbuf[2] += 'a'-'1';
 		*p1++ = '\0';
 		return;
 
@@ -256,14 +256,14 @@ putnumb(n)
 	if(n >= 100) {
 		putnumb(n/100);
 		printf("hundred\n");
-		n =% 100;
+		n %= 100;
 		if(n)
 			putnumb(n);
 		return;
 	}
 	putdig(n/10+11);
 	printf("tee\n");
-	n =% 10;
+	n %= 10;
 	if(n)
 		putnumb(n);
 }

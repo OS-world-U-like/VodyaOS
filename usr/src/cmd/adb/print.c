@@ -34,7 +34,7 @@ L_INT		localval;
 /* breakpoints */
 BKPTR		bkpthead;
 
-REGLIST reglist [] {
+REGLIST reglist [] = {
 		"ps", ps,
 		"pc", pc,
 		"sp", sp,
@@ -46,7 +46,7 @@ REGLIST reglist [] {
 		"r0", r0,
 };
 
-INT		frnames[] { 0, 3, 4, 5, 1, 2 };
+INT		frnames[] = { 0, 3, 4, 5, 1, 2 };
 
 char		lastc;
 POS		corhdr[];
@@ -67,7 +67,7 @@ INT		adrflg;
 L_INT		cntval;
 INT		cntflg;
 
-STRING		signals[] {
+STRING		signals[] = {
 		"",
 		"hangup",
 		"interrupt",
@@ -305,11 +305,11 @@ printfregs(longpr)
 	REG i;
 	L_REAL f;
 
-	printf("fpsr	%o\n", corhdr[0].fpsr);
+	printf("fpsr	%o\n", ((struct fps *)corhdr)->fpsr);
 	FOR i=0; i<FRMAX; i++
-	DO	IF corhdr[0].fpsr&FD ORF longpr	/* long mode */
-		THEN	f = corhdr[0].Lfr[frnames[i]];
-		ELSE	f = corhdr[0].Sfr[frnames[i]];
+	DO	IF ((struct fps *)corhdr)->fpsr&FD ORF longpr	/* long mode */
+		THEN	f = ((struct lfps *)corhdr)->Lfr[frnames[i]];
+		ELSE	f = ((struct fps *)corhdr)->Sfr[frnames[i]];
 		FI
 		printf("fr%-8d%-32.18f\n", i, f);
 	OD

@@ -36,7 +36,6 @@ struct stat *buf;
 	return(0);
 }
 
-static
 stcopyit(buf)
 struct stat *buf;
 {

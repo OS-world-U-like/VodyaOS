@@ -45,7 +45,7 @@ extern cell	*nfloc;		/* NF */
 
 awkfloat setfval(), getfval();
 char	*setsval(), *getsval();
-char	*tostring(), *tokname(), *malloc();
+char	*tostring(), *tokname();
 double	log(), sqrt(), exp(), atof();
 
 /* function types */

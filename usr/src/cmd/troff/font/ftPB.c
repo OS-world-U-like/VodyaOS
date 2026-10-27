@@ -1,5 +1,5 @@
 /*Commercial II*/
-char W14[256-32] {   /*character withs for Palatino Bold 814-009A*/
+char W14[256-32] = {   /*character withs for Palatino Bold 814-009A*/
 12,      /*space*/
 14,      /*!*/
 00,      /*"*/

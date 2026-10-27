@@ -194,12 +194,12 @@ switch(p->tag)
 				if(type == TYSHORT)
 					{
 					p2op2(P2ICON, P2SHORT);
-					p2i( (short)(p->const.ci) );
+					p2i( (short)(p->konst.ci) );
 					}
 				else
 					{
 					p2op2(P2LCON, P2LONG);
-					p2li(p->const.ci);
+					p2li(p->konst.ci);
 					}
 				free(p);
 				break;
@@ -208,7 +208,7 @@ switch(p->tag)
 				p2op(P2NAME);
 				p2i(P2STATIC);
 				p2i(P2INT);
-				p2i( (int) p->const.ci);
+				p2i( (int) p->konst.ci);
 				p2op2(P2ADDR, P2PTR);
 				free(p);
 				break;
@@ -329,7 +329,7 @@ switch(p->tag)
 
 
 
-LOCAL putop(p)
+putop(p)
 register expptr p;
 {
 int k, ncomma;
@@ -469,7 +469,7 @@ putstmt();
 
 
 
-LOCAL putpower(p)
+putpower(p)
 expptr p;
 {
 expptr base;
@@ -478,7 +478,7 @@ ftnint k;
 int type;
 int ncomma;
 
-if(!ISICON(p->rightp) || (k = p->rightp->const.ci)<2)
+if(!ISICON(p->rightp) || (k = p->rightp->konst.ci)<2)
 	fatal("putpower: bad call");
 base = p->leftp;
 type = base->vtype;
@@ -540,7 +540,7 @@ return(t);
 
 
 
-LOCAL putcxeq(p)
+putcxeq(p)
 register struct exprblock *p;
 {
 register struct addrblock *lp, *rp;
@@ -563,7 +563,7 @@ return(lp);
 
 
 
-LOCAL putcxop(p)
+putcxop(p)
 expptr p;
 {
 struct addrblock *putcx1();
@@ -576,7 +576,7 @@ putcomma(ncomma, TYINT, NO);
 
 
 
-LOCAL struct addrblock *putcx1(p, ncommap)
+struct addrblock *putcx1(p, ncommap)
 register expptr p;
 int *ncommap;
 {
@@ -727,7 +727,7 @@ return(resp);
 
 
 
-LOCAL putcxcmp(p)
+putcxcmp(p)
 register struct exprblock *p;
 {
 int opcode;
@@ -782,7 +782,7 @@ switch(p->tag)
 				break;
 
 			case OPCONV:
-				if(!ISICON(p->vleng) || p->vleng->const.ci!=1
+				if(!ISICON(p->vleng) || p->vleng->konst.ci!=1
 				   || ! INT(p->leftp->vtype) )
 					fatal("putch1: bad character conversion");
 				t = mktemp(TYCHAR, ICON(1) );
@@ -815,7 +815,7 @@ putcomma(ncomma, TYCHAR, YES);
 
 
 
-LOCAL putcheq(p)
+putcheq(p)
 register struct exprblock *p;
 {
 int ncomma;
@@ -842,7 +842,7 @@ free(p);
 
 
 
-LOCAL putchcmp(p)
+putchcmp(p)
 register struct exprblock *p;
 {
 int ncomma;
@@ -868,7 +868,7 @@ else
 
 
 
-LOCAL putcat(lhs, rhs)
+putcat(lhs, rhs)
 register struct addrblock *lhs;
 register expptr rhs;
 {
@@ -891,7 +891,7 @@ putcomma(ncomma, TYINT, NO);
 
 
 
-LOCAL ncat(p)
+ncat(p)
 register expptr p;
 {
 if(p->tag==TEXPR && p->opcode==OPCONCAT)
@@ -902,7 +902,7 @@ else	return(1);
 
 
 
-LOCAL putct1(q, lp, cp, ip, ncommap)
+putct1(q, lp, cp, ip, ncommap)
 register expptr q;
 register struct addrblock *lp, *cp;
 int *ip, *ncommap;
@@ -930,7 +930,7 @@ else
 	}
 }
 
-LOCAL putaddr(p, indir)
+putaddr(p, indir)
 register struct addrblock *p;
 int indir;
 {
@@ -947,7 +947,7 @@ if(p->vclass == CLPROC)
 	}
 else
 	funct = 0;
-if(p->memoffset && (!ISICON(p->memoffset) || p->memoffset->const.ci!=0) )
+if(p->memoffset && (!ISICON(p->memoffset) || p->memoffset->konst.ci!=0) )
 	offp = cpexpr(p->memoffset);
 else
 	offp = NULL;
@@ -1015,13 +1015,13 @@ frexpr(p);
 
 
 
-LOCAL struct addrblock *putcall(p)
+struct addrblock *putcall(p)
 register struct exprblock *p;
 {
 chainp arglist, charsp, cp;
 int first;
 struct addrblock *t;
-register struct exprblock *q;
+register expptr q;
 struct exprblock *fval;
 int type, type2, ctype, indir;
 
@@ -1130,7 +1130,7 @@ return(fval);
 
 
 
-LOCAL putmnmx(p)
+putmnmx(p)
 register struct exprblock *p;
 {
 int op, type;
@@ -1176,7 +1176,7 @@ frchain( &p0 );
 
 
 
-LOCAL putcomma(n, type, indir)
+putcomma(n, type, indir)
 int n, type, indir;
 {
 type = types2[type];
@@ -1243,7 +1243,7 @@ p2i(k);
 
 
 
-LOCAL p2li(n)
+p2li(n)
 long int n;
 {
 register int *p, i;
@@ -1255,7 +1255,7 @@ for(i = 0 ; i< sizeof(long int)/sizeof(int) ; ++i)
 
 
 
-LOCAL p2offset(type, offp)
+p2offset(type, offp)
 int type;
 register expptr offp;
 {

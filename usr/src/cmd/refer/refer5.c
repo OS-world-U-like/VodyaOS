@@ -6,7 +6,7 @@ static char sig[NLABC];
 
 static char bflab[NFLAB];
 static char *labtab[NLABC];
-static char *lbp bflab;
+static char *lbp = bflab;
 static char labc[NLABC];
 static char stbuff[50];
 static int  prevsig;
@@ -16,10 +16,10 @@ putsig (nf, flds, nref, nstline, endline)
 {
 /* choose signal style */
 char t[100], t1[100], t2[100], format[10], *sd;
-int another 0;
+int another = 0;
 int addon;
 char *stline;
-static FILE *fhide 0;
+static FILE *fhide = 0;
 if (labels)
 	{
 	if (nf==0) /* old */
@@ -137,7 +137,7 @@ fpar (nf, flds, out, c, seq, prepend)
 	char *flds[], *out;
 {
 char *p, *s;
-int i, fnd 0;
+int i, fnd = 0;
 for(i=0; i<nf; i++)
 	if (flds[i][1]==c && ++fnd >= seq)
 		{
@@ -198,7 +198,7 @@ keylet(t, nref)
 	char *t;
 {
 int i;
-int x 'a'-1;
+int x = 'a'-1;
 for(i=1; i<nref;i++)
 	{
 	if (strcmp(labtab[i], t) == 0)
@@ -236,7 +236,7 @@ while (n-- && (c= *t++)>0)
 initadd(to, from, stop)
 	char *to, *from, *stop;
 {
-	int c, nalph 1;
+	int c, nalph = 1;
 while (*to) to++;
 while (from<stop)
 	{
@@ -254,7 +254,7 @@ while (from<stop)
 *to=0;
 }
 
-static char *articles[] {"the ", "an ", "a ", 0};
+static char *articles[] = {"the ", "an ", "a ", 0};
 artskp(s)
 	char *s;
 {

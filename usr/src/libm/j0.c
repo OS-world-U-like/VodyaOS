@@ -169,7 +169,6 @@ y0(arg) double arg;{
 	return(n/d + tpi*j0(arg)*log(arg));
 }
 
-static
 asympt(arg) double arg;{
 	double zsq, n, d;
 	int i;

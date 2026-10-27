@@ -4,7 +4,7 @@ putref (n, tvec)
 {
 char *s, *tx;
 char buf1[LLINE], buf2[50];
-int nauth 0, i, lastype 0, cch, macro 0, la;
+int nauth = 0, i, lastype = 0, cch, macro = 0, la;
 int lauth =0, ltitle =0, lother =0;
 
 fprintf(fo, ".]-%c", sep);
@@ -111,7 +111,7 @@ tabs (sv, line)
 	char *sv[], *line;
 {
 char *p;
-int n 0;
+int n = 0;
 sv[n++] = line;
 for( p= line; *p; p++)
 	{

@@ -1,7 +1,7 @@
 /*
  * Century Schoolbook Italic-- Commercial II; name CI
  */
-char XXw[256-32] {	/*XX*/
+char XXw[256-32] = {	/*XX*/
 12,	 /*space*/
 14,	 /*!*/
 0,	 /*"*/

@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char Bw[256-32] {	/*Times Bold widths*/
+char Bw[256-32] = {	/*Times Bold widths*/
 12,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

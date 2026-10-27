@@ -42,6 +42,8 @@
 struct str {
 	int	ssize;			/* structure size */
 	struct hshtab 	**memlist;	/* member list */
+	int	flen;			/* overlay: fields (struct field) */
+	int	bitoffs;
 };
 
 /*
@@ -62,6 +64,21 @@ struct tnode {
 	struct	str *strp;	/* structure description for structs */
 	struct	tnode *tr1;	/* left operand */
 	struct	tnode *tr2;	/* right operand */
+	/*
+	 * Overlay members: the original compiler put all structure
+	 * member names in one flat namespace, so leaf nodes allocated
+	 * as cnode/lnode/fnode/field/hshtab were accessed through
+	 * "struct tnode *".  Supply the union of the names used.
+	 */
+	int	value;		/* cnode overlay */
+	LTYPE	lvalue;		/* lnode overlay */
+	char	*cstr;		/* fnode overlay */
+	int	bitoffs;	/* field overlay */
+	int	flen;
+	char	hclass;		/* hshtab overlay */
+	char	hflag;
+	int	hoffset;
+	struct	str *hstrp;
 };
 
 /*
@@ -113,6 +130,12 @@ struct	phshtab {
 	int	hoffset;
 	struct	phshtab *hpdown;
 	char	hblklev;
+	/*
+	 * Overlay members (flat namespace with tnode, see above).
+	 */
+	int	type;
+	int	*subsp;
+	struct	str *strp;
 };
 
 /*
@@ -128,6 +151,14 @@ struct hshtab {
 	struct	phshtab *hpdown;	/* Pushed-down name in outer block */
 	char	hblklev;	/* Block level of definition */
 	char	name[NCPS];	/* ASCII name */
+	/*
+	 * Overlay members (flat namespace with tnode/lnode, see above).
+	 */
+	int	op;
+	int	type;
+	int	*subsp;
+	struct	str *strp;
+	LTYPE	lvalue;
 };
 
 /*
@@ -180,8 +211,8 @@ int	cval;
 LTYPE	lcval;
 int	nchstr;
 int	nerror;
-struct	hshtab	**paraml;
-struct	hshtab	**parame;
+struct	hshtab	*paraml;
+struct	hshtab	*parame;
 int	strflg;
 int	mosflg;
 int	initflg;

@@ -5,8 +5,7 @@
 #include <sys/stat.h>
 struct stat xstat;
 struct proc mproc[NPROC];
-struct nlist nl[]
-{	{ "_proc"},
+struct nlist nl[] = {	{ "_proc"},
 	{ ""},
 };
 int err;

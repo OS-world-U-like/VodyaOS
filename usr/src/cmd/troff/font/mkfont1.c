@@ -2,7 +2,7 @@
 struct {
 	int name;
 	int ctval;
-	} font[102] {
+	} font[102] = {
 'h',2,
 't',2,
 'n',0,
@@ -105,7 +105,7 @@ struct {
 'co',0,
 'sq',0,
 '$',0};
-char *nametab[256-32] {
+char *nametab[256-32] = {
 "/*space*/",
 "/*!*/",
 "/*\"*/",
@@ -240,7 +240,7 @@ char *nametab[256-32] {
 0,
 "/*cent*/",
 };
-int chtab [] {
+int chtab [] = {
 '--', 0210,	/*font minus*/
 'hy', 0200,	/*hyphen*/
 'bu', 0201,	/*bullet*/

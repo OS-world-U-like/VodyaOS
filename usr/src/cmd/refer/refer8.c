@@ -1,7 +1,7 @@
 # include "refer..c"
 static char ahead[1000];
-static int peeked 0;
-static int noteof 1;
+static int peeked = 0;
+static int noteof = 1;
 input (s)
 	char *s;
 {

@@ -89,7 +89,7 @@ main(c, v)
 	done();
 }
 
-LOCAL VOID	exfile(prof)
+int	exfile(prof)
 BOOL		prof;
 {
 	REG L_INT	mailtime = 0;

@@ -78,7 +78,7 @@ double arg1,arg2;
 	to the range [0,0.414...] and calls xatan.
 */
 
-static double
+double
 satan(arg)
 double arg;
 {
@@ -97,7 +97,7 @@ double arg;
 	range [-0.414...,+0.414...].
 */
 
-static double
+double
 xatan(arg)
 double arg;
 {

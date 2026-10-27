@@ -16,7 +16,24 @@ struct	tnode {
 	int	type;
 	int	degree;
 	struct	tnode *tr1, *tr2;
+	/*
+	 * Overlay members: leaf nodes (tname, tconst, lconst, ftconst)
+	 * were accessed through "struct tnode *" because the original
+	 * compiler kept all member names in a flat namespace.
+	 */
+	int	value;		/* tconst/ftconst overlay */
+	LTYPE	lvalue;		/* lconst overlay */
+	double	fvalue;		/* ftconst overlay */
+	char	class;		/* tname/xtname overlay */
+	char	regno;
+	int	offset;
+	int	nloc;
+	int	mask;		/* fasgn overlay */
+	char	name[NCPS];	/* xtname overlay */
 };
+
+struct	tnode *strfunc();
+struct	tnode *lconst();
 
 /*
  * tree names for locals

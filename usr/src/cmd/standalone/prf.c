@@ -63,7 +63,7 @@ struct	device	{
 	int	rcsr,rbuf;
 	int	tcsr,tbuf;
 };
-struct	device	*KLADDR	{0177560};
+struct	device	*KLADDR	= {0177560};
 putchar(c)
 register c;
 {

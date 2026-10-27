@@ -1,0 +1,15 @@
+# Per-architecture build artifacts (objects, libraries, binaries, kernel)
+/build/x86_64/
+/build/aarch64/
+/build/loongarch64/
+/build/bin/
+/build/lib/
+/build/obj/
+
+# scratch output from lex/awk runs
+lex.yy.c
+
+# editor/OS noise
+*.o
+*.a
+*.core

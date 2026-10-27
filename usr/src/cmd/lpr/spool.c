@@ -1,6 +1,28 @@
 #include	<signal.h>
+#include	<stdio.h>
 #include	<sys/types.h>
 #include	<sys/stat.h>
+
+#ifndef	NAME
+/* Standalone compilation prelude; normally spool.c is #included by
+ * lpr.c, which defines these first. */
+#define	DPR	0
+#define	FGET	0
+#define	FSEND	0
+#define	GCAT	0
+#define	LPR	1
+#define	NAME	"vpr"
+#define	BF	'F'
+#define	MAXCOPY	204800L
+#define FIRSTCHAR 'A'-1
+char	cfname[]	= "/usr/spool/vpd/cf@XXXXX";
+char	dfname[]	= "/usr/spool/vpd/df@XXXXX";
+char	lfname[]	= "/usr/spool/vpd/lf@XXXXX";
+char	tfname[]	= "/usr/spool/vpd/tf@XXXXX";
+char	zfname[]	= "/usr/spool/vpd/zf@XXXXX";
+#endif
+extern	char	dfname[];
+extern	char	tfname[];
 
 #define	ONL	0
 #define	TOSS	1

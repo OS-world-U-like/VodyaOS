@@ -54,12 +54,13 @@ l1:
 booki(m)
 {
 	int i;
-	struct {
-		char low;
-		char high;
-	};
-	i.high = m.low;
-	i.low = m.high;
+	char *p, *q;
+
+	/* byte-swap m into i (was a PDP-11 struct overlay on an int) */
+	p = (char *)&i;
+	q = (char *)&m;
+	p[0] = q[1];
+	p[1] = q[0];
 	return(i);
 }
 

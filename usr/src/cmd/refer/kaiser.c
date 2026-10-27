@@ -1,10 +1,10 @@
 # include "stdio.h"
 # include "ctype.h"
-char *months[] {"Jan", "Feb", "Mar", "Apr", "May",
+char *months[] = {"Jan", "Feb", "Mar", "Apr", "May",
 	"Jun", "Jul", "Aug", "Sep","Oct", "Nov", "Dec",0};
 main()
 {
-int state 1000, i, book, volume, corp, report;
+int state = 1000, i, book, volume, corp, report;
 int na;
 char *v[20], **vv, **rr;
 char ubuff[1000], *up;

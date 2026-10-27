@@ -5,6 +5,8 @@
 #include <sys/dir.h>
 #include "saio.h"
 
+ino_t	dlook();
+
 int	segflag = 0;
 
 
@@ -148,7 +150,7 @@ daddr_t bn;
 	return(nb);
 }
 
-static ino_t
+ino_t
 dlook(s, io)
 char *s;
 register struct iob *io;
@@ -192,7 +194,6 @@ register struct iob *io;
 	return(0);
 }
 
-static
 match(s1,s2)
 register char *s1,*s2;
 {

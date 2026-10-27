@@ -207,7 +207,7 @@ char **argv;
 			while(*k & 0377)oput(*k++);
 			alpha++;
 			continue;
-		}else{
+		}else {
 			if(railmag != 03){
 				switch(i){
 				case 0124: lig("fi"); break;
@@ -411,7 +411,7 @@ getch(){
 	return(*ap++);
 }
 
-char *asctab[128] {
+char *asctab[128] = {
 "\0",	/*blank*/
 "h",	/*h*/
 "t",	/*t*/

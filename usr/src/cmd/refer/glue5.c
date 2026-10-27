@@ -29,7 +29,7 @@ int	xargc;
 char	**xargv;
 int	numwords;
 int	nfound;
-static int flag 0;
+static int flag = 0;
 
 
 fgrep(argc, argv)
@@ -96,7 +96,7 @@ fprintf(stderr,"inct %d xargv.2. %o %d\n",inct, xargv[2],xargv[2]);
 execute()
 {
 	register char *p;
-	register c;
+	register struct words *c;
 	register ch;
 	register ccount;
 	int f;
@@ -233,7 +233,7 @@ fprintf(stderr, "nr end loop p %o\n",p);
 
 cgotofn() {
 	register c;
-	register s;
+	register struct words *s;
 	s = smax = www;
 nword:	
 	for(;;) {
@@ -306,7 +306,7 @@ cfail() {
 	struct words **front, **rear;
 	struct words *state;
 	register char c;
-	register s;
+	register struct words *s;
 	s = www;
 	front = rear = queue;
 init:	

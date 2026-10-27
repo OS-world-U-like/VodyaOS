@@ -175,7 +175,6 @@ y1(arg) double arg;{
 	return(x*n/d + tpi*(j1(x)*log(x)-1./x));
 }
 
-static
 asympt(arg) double arg;{
 	double zsq, n, d;
 	int i;

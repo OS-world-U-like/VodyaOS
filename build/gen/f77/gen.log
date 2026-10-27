@@ -1,0 +1,2 @@
+build/gen/f77/gram.in: warning: 2 shift/reduce conflicts [-Wconflicts-sr]
+build/gen/f77/gram.in: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples

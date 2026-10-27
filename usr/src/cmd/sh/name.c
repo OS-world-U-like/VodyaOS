@@ -198,7 +198,7 @@ NAMPTR		lookup(nam)
 	return(*prev = nscan);
 }
 
-LOCAL BOOL	chkid(nam)
+ BOOL	chkid(nam)
 	STRING		nam;
 {
 	REG CHAR *	cp=nam;
@@ -214,7 +214,7 @@ LOCAL BOOL	chkid(nam)
 	return(TRUE);
 }
 
-LOCAL VOID (*namfn)();
+ VOID (*namfn)();
 namscan(fn)
 	VOID		(*fn)();
 {
@@ -222,7 +222,7 @@ namscan(fn)
 	namwalk(namep);
 }
 
-LOCAL VOID	namwalk(np)
+ VOID	namwalk(np)
 	REG NAMPTR	np;
 {
 	IF np
@@ -245,7 +245,7 @@ VOID	printnam(n)
 	FI
 }
 
-LOCAL STRING	staknam(n)
+ STRING	staknam(n)
 	REG NAMPTR	n;
 {
 	REG STRING	p;
@@ -289,7 +289,7 @@ VOID	getenv()
 	DO setname(*e++, N_ENVNAM) OD
 }
 
-LOCAL INT	namec;
+ INT	namec;
 
 VOID	countnam(n)
 	NAMPTR		n;
@@ -297,7 +297,7 @@ VOID	countnam(n)
 	namec++;
 }
 
-LOCAL STRING 	*argnam;
+ STRING 	*argnam;
 
 VOID	pushnam(n)
 	NAMPTR		n;

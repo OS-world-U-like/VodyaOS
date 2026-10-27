@@ -5,7 +5,7 @@
 #include <errno.h>
 #define	NULL	0
 
-static	char shell[] =	"/bin/sh";
+char shell[] =	"/bin/sh";
 char	*execat(), *getenv();
 extern	errno;
 
@@ -64,7 +64,7 @@ char *name, **argv;
 	return(-1);
 }
 
-static char *
+char *
 execat(s1, s2, si)
 register char *s1, *s2;
 char *si;

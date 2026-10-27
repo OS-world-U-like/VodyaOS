@@ -26,7 +26,7 @@ register char *name;
  *	used for environment searching: see getenv
  */
 
-static char *
+char *
 nvmatch(s1, s2)
 register char *s1, *s2;
 {

@@ -42,14 +42,13 @@ struct tnode *ap;
 {
 	register i;
 	register struct tnode *p;
-	struct { int intx[2]; };
 
 	p = ap;
 loop:
 	switch(p->op) {
 
 	case LCON:
-		printf("$%o", flag>10? p->lvalue.intx[1]:p->lvalue.intx[0]);
+		printf("$%o", flag>10? ((int *)&p->lvalue)[1]:((int *)&p->lvalue)[0]);
 		return;
 
 	case SFCON:
@@ -65,7 +64,7 @@ loop:
 	case NAME:
 		i = p->offset;
 		if (flag>10)
-			i =+ 2;
+			i += 2;
 		if (i) {
 			psoct(i);
 			if (p->class!=OFFS)
@@ -210,7 +209,7 @@ struct tnode *ap;
 		return(at!=INT && at!=UNSIGN && at<PTR);
 	if (st==9 && (at&XTYPE))
 		return(0);
-	st =- 2;
+	st -= 2;
 	if ((at&(~(TYPE+XTYPE))) != 0)
 		at = 020;
 	if ((at&(~TYPE)) != 0)
@@ -228,8 +227,8 @@ struct instab *itable;
 	register struct instab *insp;
 	register char *ip;
 
-	for (insp=itable; insp->op != 0; insp++) {
-		if (insp->op == op) {
+	for (insp=itable; insp->iop != 0; insp++) {
+		if (insp->iop == op) {
 			ip = c? insp->str2: insp->str1;
 			if (ip==0)
 				break;
@@ -334,7 +333,7 @@ arlength(t)
  * Strings for switch code.
  */
 
-char	dirsw[] {"\
+char	dirsw[] = {"\
 cmp	r0,$%o\n\
 jhi	L%d\n\
 asl	r0\n\
@@ -343,7 +342,7 @@ jmp	*L%d(r0)\n\
 L%d:\
 " };
 
-char	hashsw[] {"\
+char	hashsw[] = {"\
 mov	r0,r1\n\
 clr	r0\n\
 div	$%o,r0\n\
@@ -501,7 +500,7 @@ struct tnode *atree;
 
 	tree = atree;
 	if (d = ispow2(tree)) {
-		for (i=0; (d=>>1)!=0; i++);
+		for (i=0; (d>>=1)!=0; i++);
 		tree->tr2->value = i;
 		switch (tree->op) {
 
@@ -611,7 +610,7 @@ again:
 	else {
 		l1 = tree->tr2->op;
 	 	if ((l1==CON || l1==SFCON) && tree->tr2->value==0)
-			op =+ 200;		/* special for ptr tests */
+			op += 200;		/* special for ptr tests */
 		else
 			op = maprel[op-EQUAL];
 	}
@@ -686,7 +685,7 @@ struct tnode *atree;
  *  NO:	...
  * Note some tests may not be needed.
  */
-char	lrtab[2][3][6] {
+char	lrtab[2][3][6] = {
 	0,	NEQUAL,	LESS,	LESS,	GREAT,	GREAT,
 	NEQUAL,	0,	GREAT,	GREAT,	LESS,	LESS,
 	EQUAL,	NEQUAL,	LESSEQP,LESSP,	GREATQP,GREATP,
@@ -793,7 +792,7 @@ getree()
 			exit(1);
 		}
 		lbl = 0;
-		switch(op =& 0377) {
+		switch(op &= 0377) {
 
 	case SINIT:
 		printf("%o\n", geti());
@@ -876,7 +875,7 @@ getree()
 
 	case ANAME:
 		t = outname(s);
-		printf("~%s=%o\n", t+1, geti());
+		printf("~%s%=o\n", t+1, geti());
 		break;
 
 	case RNAME:
@@ -934,9 +933,10 @@ getree()
 	case NAME:
 		t = geti();
 		if (t==EXTERN) {
-			np = getblk(sizeof(*xnp));
-			np->type = geti();
-			outname(np->name);
+			xnp = getblk(sizeof(*xnp));
+			xnp->type = geti();
+			outname(xnp->name);
+			np = (struct tname *)xnp;
 		} else {
 			np = getblk(sizeof(*np));
 			np->type = geti();

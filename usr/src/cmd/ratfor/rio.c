@@ -3,7 +3,7 @@
 char	ibuf[BUFSIZE];
 char	*ip = ibuf;
 
-char	type[] {
+char	type[] = {
 	0,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,
 	CRAP,	'\t',	'\n',	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,
 	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,	CRAP,

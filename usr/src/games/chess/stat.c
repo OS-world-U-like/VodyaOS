@@ -34,7 +34,7 @@ wstatic(f)
 		j = (*p)();
 		if(f)
 			printf("%4d ", j);
-		i =+ j;
+		i += j;
 	}
 	if(f)
 		printf("=%4d ", i);
@@ -50,7 +50,7 @@ bstatic(f)
 		j = (*p)();
 		if(f)
 			printf("%4d ", j);
-		i =+ j;
+		i += j;
 	}
 	if(f)
 		printf("=%4d ", i);
@@ -101,5 +101,5 @@ int p, m, o;
 {
 
 	if((dir[p]&m) == 0)
-		control[p+o] =+ 10;
+		control[p+o] += 10;
 }

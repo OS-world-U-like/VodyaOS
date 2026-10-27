@@ -78,7 +78,7 @@
 #define	SINGLE	9
 #define	EXIT	8
 
-#define FROFF	(&(0->fpsr))
+#define FROFF	((POS)&((struct fps *)0)->fpsr)
 #define FRLEN	25
 #define FRMAX	6
 

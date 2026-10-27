@@ -130,7 +130,7 @@ typedef	long		daddr_t;
 typedef char *		caddr_t;
 typedef	unsigned int	ino_t;
 typedef	long		time_t;
-typedef	int		label_t[6];	/* regs 2-7 */
+typedef	long		label_t[8];	/* regs 2-7 */
 typedef	int		dev_t;
 typedef	long		off_t;
 

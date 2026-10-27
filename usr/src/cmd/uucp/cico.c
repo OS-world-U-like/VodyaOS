@@ -437,7 +437,7 @@ timeout()
 	longjmp(Sjbuf, 1);
 }
 
-static char *
+char *
 pskip(p)
 register char *p;
 {

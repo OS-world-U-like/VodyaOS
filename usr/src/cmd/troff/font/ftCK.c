@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char CKw[256-32] {	/*Century Bold Italic widths (CK)*/
+char CKw[256-32] = {	/*Century Bold Italic widths (CK)*/
 12,	 /*space*/
 14,	 /*!*/
 0,	 /*"*/

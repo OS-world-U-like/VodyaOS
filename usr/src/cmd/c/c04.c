@@ -194,7 +194,7 @@ struct tnode *acs;
 	nd = 0;
 	while ((t&XTYPE) == ARRAY) {
 		t = decref(t);
-		n =* cs->subsp[nd++];
+		n *= cs->subsp[nd++];
 	}
 	if ((t&~TYPE)==FUNC)
 		return(0);
@@ -262,7 +262,7 @@ simplegoto()
 			pushdecl(csp);
 		if (csp->hclass==0 && csp->htype==0) {
 			csp->htype = ARRAY;
-			csp->hflag =| FLABL;
+			csp->hflag |= FLABL;
 			if (csp->hoffset==0)
 				csp->hoffset = isn++;
 		}

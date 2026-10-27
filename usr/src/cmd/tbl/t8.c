@@ -68,7 +68,7 @@ for(c=0; c<ncol; c++)
 	{
 	s = table[nl][c].col;
 	if (s==0) continue;
-	chfont |= (font[stynum[nl]][c]);
+	chfont |= (font[stynum[nl]][c][0]!=0);
 	if (point(s) ) continue;
 	lf=prev(nl);
 	if (lf>=0 && vspen(table[lf][c].col))

@@ -32,7 +32,7 @@ s_wsue(a) cilist *a;
 	fseek(cf,(long)sizeof(int),1);
 	return(0);
 }
-c_sue(a,flag) cilist *a;
+c_sue(a,flagv) cilist *a;
 {
 	if(a->ciunit >= MXUNIT || a->ciunit < 0)
 		err(a->cierr,101,"startio");
@@ -40,7 +40,7 @@ c_sue(a,flag) cilist *a;
 	formatted=0;
 	curunit = &units[a->ciunit];
 	elist=a;
-	if(curunit->ufd==NULL && fk_open(flag,SEQ,UNF,a->ciunit))
+	if(curunit->ufd==NULL && fk_open(flagv,SEQ,UNF,a->ciunit))
 		err(a->cierr,114,"sue");
 	cf=curunit->ufd;
 	if(curunit->ufmt) err(a->cierr,103,"sue")

@@ -78,29 +78,12 @@ union ndu {
 		int cdim, csiz;
 		NODE *left;
 		NODE * right;
-		};
-	
-	struct {
-		/* this structure is the same as above,
-		   but is used when a value, rather than
-		   address, is kept in +left */
-		int op;
-		TWORD type;
-		int cdim, csiz;
 		CONSZ lval;
 		int rval;
-		};
-	
-	struct {
-		/* this structure is used when a floating point constant
-		   is being computed */
-		int op;
-		TWORD type;
-		int cdim, csiz;
 		double dval;
 		};
 
-	};
+	};;
 # endif
 
 struct sw {

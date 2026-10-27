@@ -4,7 +4,7 @@ struct xx
 {	int token;
 	char *name;
 	char *pname;
-} proc[] {
+} proc[] = {
 	{ PROGRAM, "program", NULL},
 	{ BOR, "boolop", " || "},
 	{ AND, "boolop", " && "},

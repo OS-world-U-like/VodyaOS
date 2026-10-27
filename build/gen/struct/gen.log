@@ -1,0 +1,6 @@
+build/gen/struct/pre.y:10.1-7: warning: POSIX Yacc does not support %binary [-Wyacc]
+   10 | %binary	'<' '>' xxeq xxne xxge xxle
+      | ^~~~~~~
+build/gen/struct/pre.y: warning: 3 shift/reduce conflicts [-Wconflicts-sr]
+build/gen/struct/pre.y: warning: 4 reduce/reduce conflicts [-Wconflicts-rr]
+build/gen/struct/pre.y: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples

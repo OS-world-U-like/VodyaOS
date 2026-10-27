@@ -23,14 +23,14 @@ INT		mkfault;
 STRING		errflg;
 
 CHAR		lastc;
-CHAR		eqformat[128] "o";
-CHAR		stformat[128] "o\"= \"^i";
+CHAR		eqformat[128] = "o";
+CHAR		stformat[128] = "o\"= \"^i";
 POS		*endhdr;
 
 L_INT		dot;
 L_INT		ditto;
 INT		dotinc;
-INT		lastcom '=';
+INT		lastcom = '=';
 L_INT		var[];
 L_INT		locval;
 L_INT		locmsk;
@@ -157,7 +157,7 @@ CHAR		defcom;
 				 FI
 				 put((longpr?inkdot(2):dot),itype,shorten(expv));
 				 savdot=dot;
-				 printf("=%8t"); exform(1,wformat,itype,ptype);
+				 printf("%=8t"); exform(1,wformat,itype,ptype);
 				 newline();
 			    PER  expr(0) ANDF errflg==0 DONE
 			    dot=savdot;

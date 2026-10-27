@@ -1,7 +1,7 @@
 # include "stdio.h"
-int nh 500;
+int nh = 500;
 int saw[6000];
-char *comname "/usr/lib/eign";
+char *comname = "/usr/lib/eign";
 
 main (argc,argv)
 	char *argv[];
@@ -49,11 +49,11 @@ dofile(f, name)
 # define MAXLINE 750
 char line[MAXLINE], *s;
 char key[20], *p;
-int k 0;
+int k = 0;
 int c, lim;
-int alph 0;
-int used 0;
-long lp 0;
+int alph = 0;
+int used = 0;
+long lp = 0;
 
 while (fgets(line, MAXLINE, f))
 	{

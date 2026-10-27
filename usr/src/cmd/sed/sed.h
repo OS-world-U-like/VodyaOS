@@ -102,21 +102,10 @@ char	*reend;
 char	*lbend;
 
 union	reptr {
-	struct reptr1 {
+	struct {
 		char	*ad1;
 		char	*ad2;
 		char	*re1;
-		char	*rhs;
-		FILE	*fcode;
-		char	command;
-		char	gfl;
-		char	pfl;
-		char	inar;
-		char	negfl;
-	};
-	struct reptr2 {
-		char	*ad1;
-		char	*ad2;
 		union reptr	*lb1;
 		char	*rhs;
 		FILE	*fcode;

@@ -4,7 +4,7 @@ main(argc,argv)
 {
 /* goes from file:begin,l to actual characters */
 char line[750], *p, name[100];
-FILE *fa NULL;
+FILE *fa = NULL;
 long lp;
 int len;
 

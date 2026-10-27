@@ -60,13 +60,13 @@ struct reglist {
 	INT	roffs;
 };
 
-struct {
+struct fps {
 	INT	junk[2];
 	INT	fpsr;
 	REAL	Sfr[6];
 };
 
-struct {
+struct lfps {
 	INT	junk[2];
 	INT	fpsr;
 	L_REAL	Lfr[6];

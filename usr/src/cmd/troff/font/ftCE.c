@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char CEw[256-32] {	/*Century Expanded widths*/
+char CEw[256-32] = {	/*Century Expanded widths*/
 12,	 /*space*/
 13,	 /*!*/
 0,	 /*"*/

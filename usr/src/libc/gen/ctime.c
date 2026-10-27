@@ -38,8 +38,8 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 
-static	char	cbuf[26];
-static	int	dmsize[12] =
+char	cbuf[26];
+int	dmsize[12] =
 {
 	31,
 	28,
@@ -60,7 +60,7 @@ static	int	dmsize[12] =
  * gives the day number of the first day after the Sunday of the
  * change.
  */
-static struct {
+struct {
 	int	daylb;
 	int	dayle;
 } daytab[] = {
@@ -119,7 +119,6 @@ long *tim;
  * The value is the day number of the first
  * Sunday on or after the day.
  */
-static
 sunday(t, d)
 register struct tm *t;
 register int d;
@@ -231,7 +230,7 @@ dysize(y)
 	return(365);
 }
 
-static char *
+char *
 ct_numb(cp, n)
 register char *cp;
 {

@@ -221,14 +221,14 @@ switch(p->tag)
 				type = tyint;
 			case TYLONG:
 			case TYSHORT:
-				p2icon(p->const.ci, types2[type]);
+				p2icon(p->konst.ci, types2[type]);
 				free(p);
 				break;
 
 			case TYADDR:
 				p2triple(P2ICON, 1, P2INT|P2PTR);
 				p2word(0L);
-				p2name(memname(STGCONST, (int) p->const.ci) );
+				p2name(memname(STGCONST, (int) p->konst.ci) );
 				free(p);
 				break;
 
@@ -288,7 +288,7 @@ switch(p->tag)
 #if FAMILY == SCJ
 				/*   m * (2**k) -> m<<k   */
 				if(INT(p->leftp->vtype) && ISICON(p->rightp) &&
-				   ( (k = log2(p->rightp->const.ci))>0) )
+				   ( (k = log2(p->rightp->konst.ci))>0) )
 					{
 					p->opcode = OPLSHIFT;
 					frexpr(p->rightp);
@@ -359,7 +359,7 @@ switch(p->tag)
 
 
 
-LOCAL putop(p)
+putop(p)
 expptr p;
 {
 int k;
@@ -439,7 +439,7 @@ putstmt();
 
 
 
-LOCAL putpower(p)
+putpower(p)
 expptr p;
 {
 expptr base;
@@ -448,7 +448,7 @@ ftnint k;
 int type;
 int ncomma;
 
-if(!ISICON(p->rightp) || (k = p->rightp->const.ci)<2)
+if(!ISICON(p->rightp) || (k = p->rightp->konst.ci)<2)
 	fatal("putpower: bad call");
 base = p->leftp;
 type = base->vtype;
@@ -510,7 +510,7 @@ return(t);
 
 
 
-LOCAL putcxeq(p)
+putcxeq(p)
 register struct exprblock *p;
 {
 register struct addrblock *lp, *rp;
@@ -533,7 +533,7 @@ return(lp);
 
 
 
-LOCAL putcxop(p)
+putcxop(p)
 expptr p;
 {
 struct addrblock *putcx1();
@@ -546,7 +546,7 @@ putcomma(ncomma, TYINT, NO);
 
 
 
-LOCAL struct addrblock *putcx1(p, ncommap)
+struct addrblock *putcx1(p, ncommap)
 register expptr p;
 int *ncommap;
 {
@@ -697,7 +697,7 @@ return(resp);
 
 
 
-LOCAL putcxcmp(p)
+putcxcmp(p)
 register struct exprblock *p;
 {
 int opcode;
@@ -752,7 +752,7 @@ switch(p->tag)
 				break;
 
 			case OPCONV:
-				if(!ISICON(p->vleng) || p->vleng->const.ci!=1
+				if(!ISICON(p->vleng) || p->vleng->konst.ci!=1
 				   || ! INT(p->leftp->vtype) )
 					fatal("putch1: bad character conversion");
 				t = mktemp(TYCHAR, ICON(1) );
@@ -785,7 +785,7 @@ putcomma(ncomma, TYCHAR, YES);
 
 
 
-LOCAL putcheq(p)
+putcheq(p)
 register struct exprblock *p;
 {
 int ncomma;
@@ -813,7 +813,7 @@ free(p);
 
 
 
-LOCAL putchcmp(p)
+putchcmp(p)
 register struct exprblock *p;
 {
 int ncomma;
@@ -839,7 +839,7 @@ else
 
 
 
-LOCAL putcat(lhs, rhs)
+putcat(lhs, rhs)
 register struct addrblock *lhs;
 register expptr rhs;
 {
@@ -862,7 +862,7 @@ putcomma(ncomma, TYINT, NO);
 
 
 
-LOCAL ncat(p)
+ncat(p)
 register expptr p;
 {
 if(p->tag==TEXPR && p->opcode==OPCONCAT)
@@ -873,7 +873,7 @@ else	return(1);
 
 
 
-LOCAL putct1(q, lp, cp, ip, ncommap)
+putct1(q, lp, cp, ip, ncommap)
 register expptr q;
 register struct addrblock *lp, *cp;
 int *ip, *ncommap;
@@ -901,7 +901,7 @@ else
 	}
 }
 
-LOCAL putaddr(p, indir)
+putaddr(p, indir)
 register struct addrblock *p;
 int indir;
 {
@@ -1041,7 +1041,7 @@ frexpr(p);
 
 
 
-LOCAL putmem(p, class, offset)
+putmem(p, class, offset)
 expptr p;
 int class;
 ftnint offset;
@@ -1073,13 +1073,13 @@ else
 
 
 
-LOCAL struct addrblock *putcall(p)
+struct addrblock *putcall(p)
 struct exprblock *p;
 {
 chainp arglist, charsp, cp;
 int n, first;
 struct addrblock *t;
-struct exprblock *q;
+expptr q;
 struct exprblock *fval;
 int type, type2, ctype, indir;
 
@@ -1193,7 +1193,7 @@ return(fval);
 
 
 
-LOCAL putmnmx(p)
+putmnmx(p)
 register struct exprblock *p;
 {
 int op, type;
@@ -1239,7 +1239,7 @@ frchain( &p0 );
 
 
 
-LOCAL putcomma(n, type, indir)
+putcomma(n, type, indir)
 int n, type, indir;
 {
 type = types2[type];
@@ -1274,9 +1274,9 @@ if(p->tag==TEXPR && p->opcode==OPSTAR)
 		{
 		p->opcode = OPPLUS;
 		lp->opcode = OPSTAR;
-		prod = rp->const.ci * lp->rightp->const.ci;
-		lp->rightp->const.ci = rp->const.ci;
-		rp->const.ci = prod;
+		prod = rp->konst.ci * lp->rightp->konst.ci;
+		lp->rightp->konst.ci = rp->konst.ci;
+		rp->konst.ci = prod;
 		}
 	}
 
@@ -1284,7 +1284,7 @@ if(p->tag==TEXPR && p->opcode==OPPLUS && ISICON(p->rightp))
 	{
 	rp = p->rightp;
 	lp = p->leftp;
-	offset += rp->const.ci;
+	offset += rp->konst.ci;
 	frexpr(rp);
 	free(p);
 	*p0 = lp;
@@ -1292,7 +1292,7 @@ if(p->tag==TEXPR && p->opcode==OPPLUS && ISICON(p->rightp))
 
 if(p->tag == TCONST)
 	{
-	offset += p->const.ci;
+	offset += p->konst.ci;
 	frexpr(p);
 	*p0 = NULL;
 	}

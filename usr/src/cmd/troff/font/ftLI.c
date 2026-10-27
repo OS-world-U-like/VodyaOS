@@ -1,4 +1,4 @@
-char LIw[256-32] {	/*LI Geneva Light Italic*/
+char LIw[256-32] = {	/*LI Geneva Light Italic*/
 12,	 /*space*/
 12,	 /*!*/
 0,	 /*"*/

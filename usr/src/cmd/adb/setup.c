@@ -32,10 +32,10 @@ L_INT		entrypt;
 INT		argcount;
 INT		signo;
 POS		corhdr[512];
-POS		*endhdr &corhdr[512];
+POS		*endhdr = &corhdr[512];
 
-STRING		symfil	"a.out";
-STRING		corfil	"core";
+STRING		symfil = "a.out";
+STRING		corfil = "core";
 
 #define TXTHDRSIZ	(sizeof(txthdr))
 
@@ -65,7 +65,7 @@ setsym()
 			txtmap.f2 = TXTHDRSIZ+(magic==0407?0:txtmap.e1);
 			entrypt=txthdr[5];
 			relflg=txthdr[7];
-			IF relflg!=1 THEN symbas =<< 1; FI
+			IF relflg!=1 THEN symbas <<= 1; FI
 			symbas += TXTHDRSIZ;
 
 			/* set up symvec */
@@ -92,16 +92,16 @@ setcor()
 	fcor=getfile(corfil,2);
 	datmap.ufd=fcor;
 	IF read(fcor, corhdr, ctob(USIZE))==ctob(USIZE)
-	THEN	txtsiz = corhdr->u_tsize << 6;
-		datsiz = corhdr->u_dsize << 6;
-		stksiz = corhdr->u_ssize << 6;
+	THEN	txtsiz = ((struct user *)corhdr)->u_tsize << 6;
+		datsiz = ((struct user *)corhdr)->u_dsize << 6;
+		stksiz = ((struct user *)corhdr)->u_ssize << 6;
 		datmap.b1 = datbas = (magic==0410?round(txtsiz,TXTRNDSIZ):0);
 		datmap.e1=(magic==0407?txtsiz:datmap.b1)+datsiz;
 		datmap.f1 = ctob(USIZE);
 		datmap.b2 = maxstor-stksiz;
 		datmap.e2 = maxstor;
 		datmap.f2 = ctob(USIZE)+(magic==0410?datsiz:datmap.e1);
-		IF magic ANDF magic!=corhdr[0].u_exdata.ux_mag
+		IF magic ANDF magic!=((struct user *)corhdr)->u_exdata.ux_mag
 		THEN	printf("%s\n",BADMAG);
 		FI
 	ELSE	datmap.e1 = maxfile;

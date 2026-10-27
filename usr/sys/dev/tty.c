@@ -726,3 +726,14 @@ register struct tty *tp;
 	return(NULL);
 }
 
+
+/*
+ * Historical compatibility: some V7 drivers spell this entry point
+ * "ttioccom" while tty.c defines "ttioccomm".  Provide both.
+ */
+ttioccom(com, tp, addr, dev)
+struct tty *tp;
+caddr_t addr;
+{
+	return ttioccomm(com, tp, addr, dev);
+}

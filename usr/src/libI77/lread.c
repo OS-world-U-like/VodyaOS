@@ -15,7 +15,7 @@ int (*lioproc)();
 #define AX 4
 #define EX 8
 #define SG 16
-char ltab[128+1]	/* offset one for EOF */
+char ltab[128+1] =	/* offset one for EOF */
 {	0,
 	0,0,AX,0,0,0,0,0,0,0,B,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -381,7 +381,7 @@ t_sep()
 	ungetc(ch,cf);
 	return(0);
 }
-c_le(a,flag) cilist *a;
+c_le(a,flagv) cilist *a;
 {
 	fmtbuf="list io";
 	if(a->ciunit>=MXUNIT || a->ciunit<0)
@@ -389,7 +389,7 @@ c_le(a,flag) cilist *a;
 	scale=recpos=0;
 	elist=a;
 	curunit = &units[a->ciunit];
-	if(curunit->ufd==NULL && fk_open(flag,SEQ,FMT,a->ciunit))
+	if(curunit->ufd==NULL && fk_open(flagv,SEQ,FMT,a->ciunit))
 		err(a->cierr,102,"lio");
 	cf=curunit->ufd;
 	if(!curunit->ufmt) err(a->cierr,103,"lio")

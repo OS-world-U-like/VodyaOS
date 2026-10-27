@@ -21,7 +21,7 @@ return(0);
 dumpold()
 {
 FILE *fi;
-int c, g1 0, nr 1;
+int c, g1 = 0, nr = 1;
 if (!endpush) return;
 fclose(fo);
 fo=NULL;
@@ -48,7 +48,7 @@ while ( (c = getc(fi)) >0)
 		{
 		/* make old-new ref number table */
 		char tb[20];
-		char *s tb;
+		char *s = tb;
 		while ( (c=getc(fi)) != FLAG)
 			*s++ = c;
 		*s=0;
@@ -86,7 +86,7 @@ while ( (c = getc(ftemp)) != EOF)
 	if (c == FLAG)
 		{
 		char tb[10];
-		char *s tb;
+		char *s = tb;
 		while ( (c = getc(ftemp)) != FLAG)
 			*s++ = c;
 		*s=0;

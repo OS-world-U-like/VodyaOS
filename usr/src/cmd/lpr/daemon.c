@@ -4,6 +4,11 @@
  */
 
 long	snsum = 0;		/*number of characters written*/
+char	error[]	= "/usr/spool/lpd/errs";
+char	dname[]	= "lpd";
+extern	char	dpd[];
+extern	char	dfname[];
+extern	char	lock[];
 
 #include	"daemon0.c"
 

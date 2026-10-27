@@ -3,15 +3,15 @@ extern FILE *in;
 # define NFLD 30
 # define TLEN 400
 char one[ANSLEN];
-int onelen ANSLEN;
-static char dr [100] "";
+int onelen = ANSLEN;
+static char dr [100] = "";
 doref(firline)
 	char *firline;
 {
 char buff[QLEN], dbuff[3*QLEN], answer[ANSLEN], temp[TLEN];
 char line[LLINE];
 char *p, **sr, *flds[NFLD], *r;
-int nf, nr, alph, query 0, chp, digs;
+int nf, nr, alph, query = 0, chp, digs;
 
 /* get query */
 buff[0] = dbuff[0] = 0;
@@ -156,7 +156,7 @@ fprintf(stderr, "put ref\n");
 newline(s)
 	char *s;
 {
-int k 0, c;
+int k = 0, c;
 while (c = *s++)
 	if (c == '\n')
 		k++;

@@ -3,10 +3,8 @@ extern
 #include "d.h"
 extern
 #include "v.h"
-#ifdef NROFF
 extern
 #include "tw.h"
-#endif
 
 /*
 troff6.c

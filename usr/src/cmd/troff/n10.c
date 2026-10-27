@@ -22,6 +22,7 @@ extern int oline[];
 extern int *olinep;
 extern int ulfont;
 extern int esct;
+extern int pts;
 extern int sps;
 extern int ics;
 extern int ttysave;

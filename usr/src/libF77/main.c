@@ -22,21 +22,21 @@ f_exit();
 }
 
 
-static sigfdie()
+sigfdie()
 {
 sigdie("Floating Exception");
 }
 
 
 
-static sigidie()
+sigidie()
 {
 sigdie("IOT Trap");
 }
 
 
 
-static sigdie(s)
+sigdie(s)
 register char *s;
 {
 /* print error message, then clear buffers */

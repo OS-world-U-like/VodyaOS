@@ -70,7 +70,7 @@ else
 
 
 
-LOCAL pushctl(code)
+pushctl(code)
 int code;
 {
 register int i;
@@ -84,7 +84,7 @@ for(i = 0 ; i < 4 ; ++i)
 }
 
 
-LOCAL popctl()
+popctl()
 {
 if( ctlstack-- < ctls )
 	fatal("control stack empty");
@@ -226,11 +226,11 @@ if(p)
 		}
 	else if( ISINT(p->vtype) )
 		{
-		q = convic(p->const.ci);
+		q = convic(p->konst.ci);
 		n = strlen(q);
 		if(n > 0)
 			{
-			p->const.ccp = copyn(n, q);
+			p->konst.ccp = copyn(n, q);
 			p->vtype = TYCHAR;
 			p->vleng = ICON(n);
 			}
@@ -511,7 +511,7 @@ else
 
 
 
-LOCAL exar2(op, e, l1, l2)
+exar2(op, e, l1, l2)
 int op;
 expptr e;
 int l1, l2;

@@ -4,33 +4,33 @@ extern char refdir[];
 extern int keepold;
 extern char *fgnames[];
 extern char **fgnamp;
-FILE *fd 0;
-int lmaster 500;
+FILE *fd = 0;
+int lmaster = 500;
 int *hfreq, hfrflg;
-int colevel 0;
-int soutlen 1000;
-int reached 0;
-int iflong 0;
-int prfreqs 0;
+int colevel = 0;
+int soutlen = 1000;
+int reached = 0;
+int iflong = 0;
+int prfreqs = 0;
 char usedir[100];
 char gfile[50];
-static int full 1000;
-static int tags 0;
+static int full = 1000;
+static int tags = 0;
 char *sinput, *soutput, *tagout;
-long indexdate 0, gdate();
+long indexdate = 0, gdate();
 
 main(argc,argv)
 	char *argv[];
 {
 /* read query from stdin, expect name of indexes in argv[1] */
 static FILE *fa, *fb, *fc;
-char nma[100], nmb[100], nmc[100], *qitem[100], *rprog 0;
+char nma[100], nmb[100], nmc[100], *qitem[100], *rprog = 0;
 char nmd[100], grepquery[256];
 static char oldname[30] ;
-static int was 0;
+static int was = 0;
 /* these pointers are unions of pointer to int and pointer to long */
 long *hpt;
-unsigned *master 0;
+unsigned *master = 0;
 int falseflg, nhash, nitem, nfound, frtbl, kk;
 
 	/* special wart for refpart: default is tags only */

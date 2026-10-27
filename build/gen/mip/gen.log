@@ -1,0 +1,128 @@
+build/gen/mip/pre.y:123.17-21: warning: symbol CLASS redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                 ^~~~~
+build/gen/mip/pre.y:39.8-12: note: previous declaration
+   39 | %token CLASS  34
+      |        ^~~~~
+build/gen/mip/pre.y:123.23-26: warning: symbol NAME redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                       ^~~~
+build/gen/mip/pre.y:1.8-11: note: previous declaration
+    1 | %token NAME  2
+      |        ^~~~
+build/gen/mip/pre.y:123.28-33: warning: symbol STRUCT redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                            ^~~~~~
+build/gen/mip/pre.y:40.8-13: note: previous declaration
+   40 | %token STRUCT  35
+      |        ^~~~~~
+build/gen/mip/pre.y:123.35-39: warning: symbol RELOP redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                   ^~~~~
+build/gen/mip/pre.y:29.8-12: note: previous declaration
+   29 | %token RELOP  26
+      |        ^~~~~
+build/gen/mip/pre.y:123.41-42: warning: symbol CM redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                         ^~
+build/gen/mip/pre.y:80.8-9: note: previous declaration
+   80 | %token CM  56
+      |        ^~
+build/gen/mip/pre.y:123.44-48: warning: symbol DIVOP redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                            ^~~~~
+build/gen/mip/pre.y:31.8-12: note: previous declaration
+   31 | %token DIVOP  28
+      |        ^~~~~
+build/gen/mip/pre.y:123.50-53: warning: symbol PLUS redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                                  ^~~~
+build/gen/mip/pre.y:5.8-11: note: previous declaration
+    5 | %token PLUS   6
+      |        ^~~~
+build/gen/mip/pre.y:123.55-59: warning: symbol MINUS redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                                       ^~~~~
+build/gen/mip/pre.y:6.8-12: note: previous declaration
+    6 | %token MINUS   8
+      |        ^~~~~
+build/gen/mip/pre.y:123.61-67: warning: symbol SHIFTOP redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                                             ^~~~~~~
+build/gen/mip/pre.y:32.8-14: note: previous declaration
+   32 | %token SHIFTOP  29
+      |        ^~~~~~~
+build/gen/mip/pre.y:123.69-71: warning: symbol MUL redeclared [-Wother]
+  123 | %token <intval> CLASS NAME STRUCT RELOP CM DIVOP PLUS MINUS SHIFTOP M...
+      |                                                                     ^
+build/gen/mip/pre.y:7.8-10: note: previous declaration
+    7 | %token MUL   11
+      |        ^~~
+build/gen/mip/pre.y:123.73-75: warning: symbol AND redeclared [-Wother]
+  123 | ...FTOP MUL AND OR ER ANDAND OROR
+      |             ^~~
+build/gen/mip/pre.y:8.8-10: note: previous declaration
+    8 | %token AND   14
+      |        ^~~
+build/gen/mip/pre.y:123.77-78: warning: symbol OR redeclared [-Wother]
+  123 | ... MUL AND OR ER ANDAND OROR
+      |             ^~
+build/gen/mip/pre.y:9.8-9: note: previous declaration
+    9 | %token OR   17
+      |        ^~
+build/gen/mip/pre.y:123.80-81: warning: symbol ER redeclared [-Wother]
+  123 | ...L AND OR ER ANDAND OROR
+      |             ^~
+build/gen/mip/pre.y:10.8-9: note: previous declaration
+   10 | %token ER   19
+      |        ^~
+build/gen/mip/pre.y:123.83-88: warning: symbol ANDAND redeclared [-Wother]
+  123 | ...ND OR ER ANDAND OROR
+      |             ^~~~~~
+build/gen/mip/pre.y:13.8-13: note: previous declaration
+   13 | %token ANDAND  23
+      |        ^~~~~~
+build/gen/mip/pre.y:123.90-93: warning: symbol OROR redeclared [-Wother]
+  123 | ...R ANDAND OROR
+      |             ^~~~
+build/gen/mip/pre.y:14.8-11: note: previous declaration
+   14 | %token OROR  24
+      |        ^~~~
+build/gen/mip/pre.y:124.17-22: warning: symbol ASSIGN redeclared [-Wother]
+  124 | 		ASSIGN STROP INCOP UNOP ICON
+      |                 ^~~~~~
+build/gen/mip/pre.y:82.8-13: note: previous declaration
+   82 | %token ASSIGN  58
+      |        ^~~~~~
+build/gen/mip/pre.y:124.24-28: warning: symbol STROP redeclared [-Wother]
+  124 | 		ASSIGN STROP INCOP UNOP ICON
+      |                        ^~~~~
+build/gen/mip/pre.y:35.8-12: note: previous declaration
+   35 | %token STROP  32
+      |        ^~~~~
+build/gen/mip/pre.y:124.30-34: warning: symbol INCOP redeclared [-Wother]
+  124 | 		ASSIGN STROP INCOP UNOP ICON
+      |                              ^~~~~
+build/gen/mip/pre.y:33.8-12: note: previous declaration
+   33 | %token INCOP  30
+      |        ^~~~~
+build/gen/mip/pre.y:124.36-39: warning: symbol UNOP redeclared [-Wother]
+  124 | 		ASSIGN STROP INCOP UNOP ICON
+      |                                    ^~~~
+build/gen/mip/pre.y:34.8-11: note: previous declaration
+   34 | %token UNOP  31
+      |        ^~~~
+build/gen/mip/pre.y:124.41-44: warning: symbol ICON redeclared [-Wother]
+  124 | 		ASSIGN STROP INCOP UNOP ICON
+      |                                         ^~~~
+build/gen/mip/pre.y:3.8-11: note: previous declaration
+    3 | %token ICON  4
+      |        ^~~~
+build/gen/mip/pre.y:125.16-19: warning: symbol TYPE redeclared [-Wother]
+  125 | %token <nodep> TYPE
+      |                ^~~~
+build/gen/mip/pre.y:38.8-11: note: previous declaration
+   38 | %token TYPE  33
+      |        ^~~~
+build/gen/mip/pre.y: warning: 7 shift/reduce conflicts [-Wconflicts-sr]
+build/gen/mip/pre.y: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples

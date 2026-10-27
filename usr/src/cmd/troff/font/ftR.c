@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char Rw[256-32] {	/*Times Roman widths*/
+char Rw[256-32] = {	/*Times Roman widths*/
 12,	 /*space*/
 12,	 /*!*/
 0,	 /*"*/

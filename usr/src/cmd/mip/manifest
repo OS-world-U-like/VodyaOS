@@ -270,49 +270,15 @@ union ndu {
 		char name[NCHNAM];
 		NODE *left;
 		NODE *right;
-		};
-	
-	struct {
-		int op;
-		int rall;
-		TWORD type;
-		int su;
-		char name[NCHNAM];
 		CONSZ lval;
 		int rval;
-		};
-	
-	struct {
-		int op, rall;
-		TWORD type;
-		int su;
 		int label;  /* for use with branching */
-		};
-
-	struct {
-		int op, rall;
-		TWORD type;
-		int su;
 		int stsize;  /* sizes of structure objects */
 		int stalign;  /* alignment of structure objects */
-		};
-
-	struct {
-		int op;
 		int cdim;
-		TWORD type;
-		int csiz;
-		};
-	
-	struct {
-		/* this structure is used when a floating point constant
-		   is being computed */
-		int op;
-		int cdim;
-		TWORD type;
 		int csiz;
 		double dval;
 		};
 
-	};
+	};;
 # endif

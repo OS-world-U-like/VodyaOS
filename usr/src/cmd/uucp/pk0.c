@@ -5,6 +5,9 @@
 #include <sys/pk.h>
 #include <sys/buf.h>
 
+/* from usr/include/pack.h (which redeclares the sys/pk.h structs) */
+#define	ISCNTL(a)	((a & 0300)==0)
+
 /*
  * packet driver
  */

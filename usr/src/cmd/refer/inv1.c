@@ -16,13 +16,13 @@ main(argc, argv)
 */
 
 FILE *fa, *fb, *fc, *fta, *ftb, *ftc, *fd;
-int nhash 256;
-int appflg 1;
-int keepkey 0, pipein 0;
+int nhash = 256;
+int appflg = 1;
+int keepkey = 0, pipein = 0;
 char nma[100], nmb[100], nmc[100], com[100], nmd[100];
 char tmpa[20], tmpb[20], tmpc[20];
-char *remove NULL;
-int chatty 0, docs, hashes, fp[2], fr, fw, pfork, pwait, status;
+char *remove = NULL;
+int chatty = 0, docs, hashes, fp[2], fr, fw, pfork, pwait, status;
 int i,j,k;
 long keys;
 int iflong =0;

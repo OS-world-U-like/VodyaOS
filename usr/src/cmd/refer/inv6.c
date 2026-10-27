@@ -6,15 +6,15 @@ whash(ft, fa, fb, nhash, iflong, ptotct, phused)
 	long *ptotct;
 {
 char line[100];
-int hash 0, hused 0;
-long totct 0L;
-int ct 0;
+int hash = 0, hused = 0;
+long totct = 0L;
+int ct = 0;
 long point;
-long opoint -1;
+long opoint = -1;
 int m;
 int k; long lp;
 long *hpt;
-int *hfreq NULL;
+int *hfreq = NULL;
 
 hpt = calloc (nhash+1, sizeof(*hpt));
 _assert (hpt != NULL);

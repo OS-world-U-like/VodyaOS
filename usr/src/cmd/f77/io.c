@@ -202,13 +202,13 @@ ioerrlab = ioendlab = skiplab = jumplab = 0;
 
 if(p = V(IOSEND))
 	if(ISICON(p))
-		ioendlab = mklabel(p->const.ci)->labelno;
+		ioendlab = mklabel(p->konst.ci)->labelno;
 	else
 		err("bad end= clause");
 
 if(p = V(IOSERR))
 	if(ISICON(p))
-		ioerrlab = mklabel(p->const.ci)->labelno;
+		ioerrlab = mklabel(p->konst.ci)->labelno;
 	else
 		err("bad err= clause");
 
@@ -354,7 +354,7 @@ frexpr(IOSTP);
 
 
 
-LOCAL doiolist(p0)
+doiolist(p0)
 chainp p0;
 {
 chainp p;
@@ -409,7 +409,7 @@ frchain( &p0 );
 
 
 
-LOCAL putio(nelt, addr)
+putio(nelt, addr)
 expptr nelt;
 register expptr addr;
 {
@@ -434,7 +434,7 @@ if(type != TYCHAR)
 	}
 
 nelt = fixtype( mkconv(TYLENG,nelt) );
-if(ioformatted == LISTDIRECTTED)
+if(ioformatted == LISTDIRECTED)
 	q = call3(TYINT, "do_lio", mkconv(TYLONG, ICON(type)), nelt, addr);
 else
 	q = call2(TYINT, (ioformatted==FORMATTED ? "do_fio" : "do_uio"),
@@ -462,7 +462,7 @@ if(IOSTP)
 
 
 
-LOCAL putiocall(q)
+putiocall(q)
 register struct exprblock *q;
 {
 if(IOSTP)
@@ -556,7 +556,7 @@ if(p = V(IOSFMT))
 		ioset(TYADDR, fmtoff, addrof(cpexpr(p)) );
 	else if( ISICON(p) )
 		{
-		if( (k = fmtstmt( mklabel(p->const.ci) )) > 0 )
+		if( (k = fmtstmt( mklabel(p->konst.ci) )) > 0 )
 			ioset(TYADDR, fmtoff, mkaddcon(k) );
 		else
 			ioformatted = UNFORMATTED;
@@ -584,7 +584,7 @@ putiocall( call1(TYINT, ioroutine, cpexpr(ioblkp) ));
 
 
 
-LOCAL dofopen()
+dofopen()
 {
 register expptr p;
 
@@ -617,7 +617,7 @@ putiocall( call1(TYINT, "f_open", cpexpr(ioblkp) ));
 }
 
 
-LOCAL dofclose()
+dofclose()
 {
 register expptr p;
 
@@ -632,7 +632,7 @@ else
 }
 
 
-LOCAL dofinquire()
+dofinquire()
 {
 register expptr p;
 if(p = V(IOSUNIT))
@@ -644,8 +644,8 @@ if(p = V(IOSUNIT))
 else if( ! V(IOSFILE) )
 	err("must inquire by unit or by file");
 iosetlc(IOSFILE, XFILE, XFILELEN);
-iosetip(IOSEXISTS, XEXISTS);
-iosetip(IOSOPENED, XOPEN);
+iosetip(IOSEXIST, XEXISTS);
+iosetip(IOSOPENEDED, XOPEN);
 iosetip(IOSNUMBER, XNUMBER);
 iosetip(IOSNAMED, XNAMED);
 iosetlc(IOSNAME, XNAME, XNAMELEN);
@@ -663,7 +663,7 @@ putiocall( call1(TYINT,  "f_inqu", cpexpr(ioblkp) ));
 
 
 
-LOCAL dofmove(subname)
+dofmove(subname)
 char *subname;
 {
 register expptr p;
@@ -679,7 +679,7 @@ else
 
 
 
-LOCAL ioset(type, offset, p)
+ioset(type, offset, p)
 int type, offset;
 expptr p;
 {
@@ -694,7 +694,7 @@ puteq(q, p);
 
 
 
-LOCAL iosetc(offset, p)
+iosetc(offset, p)
 int offset;
 register expptr p;
 {
@@ -708,7 +708,7 @@ else
 
 
 
-LOCAL iosetip(i, offset)
+iosetip(i, offset)
 int i, offset;
 {
 register expptr p;
@@ -724,7 +724,7 @@ else
 
 
 
-LOCAL iosetlc(i, offp, offl)
+iosetlc(i, offp, offl)
 int i, offp, offl;
 {
 register expptr p;

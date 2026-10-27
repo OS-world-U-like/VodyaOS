@@ -47,7 +47,7 @@ e_wdfe()
 	en_fio();
 	return(0);
 }
-c_dfe(a,flag) cilist *a;
+c_dfe(a,flagv) cilist *a;
 {
 	sequential=0;
 	formatted=external=1;
@@ -56,7 +56,7 @@ c_dfe(a,flag) cilist *a;
 	if(a->ciunit>MXUNIT || a->ciunit<0)
 		err(a->cierr,101,"startchk");
 	curunit = &units[a->ciunit];
-	if(curunit->ufd==NULL && fk_open(flag,DIR,FMT,a->ciunit))
+	if(curunit->ufd==NULL && fk_open(flagv,DIR,FMT,a->ciunit))
 		err(a->cierr,104,"dfe");
 	cf=curunit->ufd;
 	if(!curunit->ufmt) err(a->cierr,102,"dfe")

@@ -1,5 +1,5 @@
 /*modified for Commercial II*/
-char UDw[256-32] {	/*Utica Demibold widths (Utica == Futura)*/
+char UDw[256-32] = {	/*Utica Demibold widths (Utica == Futura)*/
 12,	 /*space*/
 11,	 /*!*/
 0,	 /*"*/

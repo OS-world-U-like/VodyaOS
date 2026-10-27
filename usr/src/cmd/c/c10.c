@@ -13,23 +13,23 @@
 #define	dbprint(op)	printf("	/ %s", opntab[op])
 #endif
 
-char	maprel[] {	EQUAL, NEQUAL, GREATEQ, GREAT, LESSEQ,
+char	maprel[] = {	EQUAL, NEQUAL, GREATEQ, GREAT, LESSEQ,
 			LESS, GREATQP, GREATP, LESSEQP, LESSP
 };
 
-char	notrel[] {	NEQUAL, EQUAL, GREAT, GREATEQ, LESS,
+char	notrel[] = {	NEQUAL, EQUAL, GREAT, GREATEQ, LESS,
 			LESSEQ, GREATP, GREATQP, LESSP, LESSEQP
 };
 
-struct tconst czero { CON, INT, 0};
-struct tconst cone  { CON, INT, 1};
+struct tconst czero = { CON, INT, 0};
+struct tconst cone  = { CON, INT, 1};
 
-struct tname sfuncr { NAME, STRUCT, STATIC, 0, 0, 0 };
+struct tname sfuncr = { NAME, STRUCT, STATIC, 0, 0, 0 };
 
 struct	table	*cregtab;
 
-int	nreg	3;
-int	isn	10000;
+int	nreg	= 3;
+int	isn	= 10000;
 
 main(argc, argv)
 char *argv[];
@@ -130,8 +130,8 @@ struct table *table;
 		}
 		d2 = dcalc(p2, nrleft);
 	}
-	for (; table->op!=op; table++)
-		if (table->op==0)
+	for (; table->tabop!=op; table++)
+		if (table->tabop==0)
 			return(0);
 	for (opt = table->tabp; opt->tabdeg1!=0; opt++) {
 		if (d1 > (opt->tabdeg1&077)
@@ -188,7 +188,7 @@ struct table *atable;
 		recurf++;
 		reg = ~reg;
 		if (reg>=020) {
-			reg =- 020;
+			reg -= 020;
 			recurf++;
 		}
 	}
@@ -280,11 +280,11 @@ again:
 		tree = tree->tr2;
 		if(tree->op) {
 			while (tree->op==COMMA) {
-				r =+ comarg(tree->tr2, &modf);
+				r += comarg(tree->tr2, &modf);
 				tree = tree->tr1;
 				nargs++;
 			}
-			r =+ comarg(tree, &modf);
+			r += comarg(tree, &modf);
 			nargs++;
 		}
 		tree = atree;
@@ -294,7 +294,7 @@ again:
 		if (cexpr(tree, regtab, reg)<0)
 			error("compiler botch: call");
 		popstk(r);
-		nstack =- nargs;
+		nstack -= nargs;
 		if (table==efftab || table==regtab)
 			return(0);
 		r = 0;
@@ -406,7 +406,7 @@ struct table *table;
 	struct tnode *p2;
 	char *string;
 	int reg, reg1, rreg, flag, opd;
-	char *opt;
+	struct optab *opt;
 
 	tree = atree;
 	reg = areg;
@@ -460,7 +460,7 @@ struct table *table;
 	if ((tree->op==PLUS||tree->op==ASPLUS) &&
 	    (p1=tree->tr2)->op == CON && p1->value == -1) {
 		p1->value = 1;
-		tree->op =+ (MINUS-PLUS);
+		tree->op += (MINUS-PLUS);
 	}
 	/*
 	 * Because of a peculiarity of the PDP11 table
@@ -511,7 +511,7 @@ loop:
 	 * The 0200 bit asks for a tab.
 	 */
 	if ((c = *string++) & 0200) {
-		c =& 0177;
+		c &= 0177;
 		putchar('\t');
 	}
 	switch (c) {
@@ -613,7 +613,7 @@ loop:
 		c = *string++ - 'A';
 		if (*string=='!') {
 			string++;
-			c =| 020;	/* force right register */
+			c |= 020;	/* force right register */
 		}
 		if ((c&02)!=0)
 			ctable = sptab;
@@ -905,7 +905,7 @@ struct table *table;
 		case DECBEF:
 		OK:
 			if (table==cctab||table==cregtab)
-				reg =+ 020;
+				reg += 020;
 			rcexpr(optim(p), efftab, ~reg);
 			*treep = p1;
 			return(1);
@@ -1049,7 +1049,7 @@ int *flagp;
 		tree = tnode(PLUS, STRUCT+PTR, tree, tconst(size, INT));
 		tree = optim(tree);
 		retval = rcexpr(tree, regtab, 0);
-		size =>> 1;
+		size >>= 1;
 		if (size <= 5) {
 			for (i=0; i<size; i++)
 				printf("mov	-(r%d),-(sp)\n", retval);

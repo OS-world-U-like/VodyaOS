@@ -1,7 +1,7 @@
 # include "stdio.h"
 # include "assert.h"
 # define TXTLEN 1000
-char *outbuf 0;
+char *outbuf = 0;
 extern char *soutput;
 extern int soutlen, iflong;
 extern long indexdate;

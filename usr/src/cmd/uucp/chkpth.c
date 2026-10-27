@@ -206,7 +206,7 @@ char *name;
 		return(0);
 	if ((s.st_mode & S_IFMT) == S_IFDIR)
 		return(0);
-	return(s.st_nlinks);
+	return(s.st_nlink);
 }
 
 

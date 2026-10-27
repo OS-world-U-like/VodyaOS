@@ -106,8 +106,8 @@ STRING	catpath(path,name)
 	return(path);
 }
 
-LOCAL STRING	xecmsg;
-LOCAL STRING	*xecenv;
+ STRING	xecmsg;
+ STRING	*xecenv;
 
 VOID	execa(at)
 	STRING		at[];
@@ -124,7 +124,7 @@ VOID	execa(at)
 	FI
 }
 
-LOCAL STRING	execs(ap,t)
+ STRING	execs(ap,t)
 	STRING		ap;
 	REG STRING	t[];
 {
@@ -167,8 +167,8 @@ LOCAL STRING	execs(ap,t)
 
 /* for processes to be waited for */
 #define MAXP 20
-LOCAL INT	pwlist[MAXP];
-LOCAL INT	pwc;
+ INT	pwlist[MAXP];
+ INT	pwc;
 
 postclr()
 {
@@ -294,7 +294,7 @@ STRING	*scan(argn)
 	return(comargn);
 }
 
-LOCAL VOID	gsort(from,to)
+ VOID	gsort(from,to)
 	STRING		from[], to[];
 {
 	INT		k, m, n;
@@ -337,7 +337,7 @@ INT	getarg(ac)
 	return(count);
 }
 
-LOCAL INT	split(s)
+ INT	split(s)
 	REG STRING	s;
 {
 	REG STRING	argp;
@@ -355,7 +355,7 @@ LOCAL INT	split(s)
 		ELIF c==0
 		THEN	s--;
 		FI
-		IF c=expand((argp=endstak(argp))->argval,0)
+		IF c=expand(((ARGPTR)(argp=endstak(argp)))->argval,0)
 		THEN	count += c;
 		ELSE	/* assign(&fngnod, argp->argval); */
 			makearg(argp); count++;

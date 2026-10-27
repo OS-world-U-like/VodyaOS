@@ -1,4 +1,4 @@
-char SMw[256-32] {	/*SM Stymie Medium*/
+char SMw[256-32] = {	/*SM Stymie Medium*/
 12,	 /*space*/
 11,	 /*!*/
 0,	 /*"*/

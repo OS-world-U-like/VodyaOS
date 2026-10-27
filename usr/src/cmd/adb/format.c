@@ -85,11 +85,13 @@ STRING		ifp;
 	L_INT		savdot, wx;
 	STRING		fp;
 	CHAR		c, modifier, longpr;
-	L_REAL		fw;
-	struct{
-		L_INT	sa;
-		INT	sb,sc;
-	};
+	union {
+		L_REAL	f;
+		struct {
+			L_INT	sa;
+			INT	sb,sc;
+		};
+	} fw;
 
 	WHILE fcount>0
 	DO	fp = ifp; c = *fp;
@@ -192,7 +194,7 @@ STRING		ifp;
 			printf("%-16D", wx); break;
 
 		    case 'f':
-			fw = 0;
+			fw.f = 0;
 			fw.sa = wx;
 			printf("%-16.9f", fw);
 			dotinc=4; break;
@@ -235,7 +237,7 @@ STRING		ifp;
 unox()
 {
 	INT		rc, status, unixpid;
-	STRING		argp lp;
+	STRING		argp, lp;
 
 	WHILE lastc!=EOR DO rdc(); OD
 	IF (unixpid=fork())==0

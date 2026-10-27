@@ -153,7 +153,7 @@ q->memoffset = ICON(0);
 switch(type = p->vtype)
 	{
 	case TYCHAR:
-		if(p->vleng->const.ci > XL)
+		if(p->vleng->konst.ci > XL)
 			break;	/* too long for literal table */
 		litflavor = 1;
 		goto loop;
@@ -175,9 +175,9 @@ switch(type = p->vtype)
 			if(type == litp->littype) switch(litflavor)
 				{
 			case 1:
-				if(p->vleng->const.ci != litp->litval.litcval.litclen)
+				if(p->vleng->konst.ci != litp->litval.litcval.litclen)
 					break;
-				if(! eqn( (int) p->vleng->const.ci, p->const.ccp,
+				if(! eqn( (int) p->vleng->konst.ci, p->konst.ccp,
 					litp->litval.litcval.litcstr) )
 						break;
 
@@ -187,12 +187,12 @@ switch(type = p->vtype)
 				return(q);
 
 			case 2:
-				if(p->const.cd[0] == litp->litval.litdval)
+				if(p->konst.cd[0] == litp->litval.litdval)
 					goto ret;
 				break;
 
 			case 3:
-				if(p->const.ci == litp->litval.litival)
+				if(p->konst.ci == litp->litval.litival)
 					goto ret;
 				break;
 				}
@@ -204,18 +204,18 @@ switch(type = p->vtype)
 			switch(litflavor)
 				{
 				case 1:
-					litp->litval.litcval.litclen = p->vleng->const.ci;
+					litp->litval.litcval.litclen = p->vleng->konst.ci;
 					cpn( (int) litp->litval.litcval.litclen,
-						p->const.ccp,
+						p->konst.ccp,
 						litp->litval.litcval.litcstr);
 					break;
 
 				case 2:
-					litp->litval.litdval = p->const.cd[0];
+					litp->litval.litdval = p->konst.cd[0];
 					break;
 
 				case 3:
-					litp->litval.litival = p->const.ci;
+					litp->litval.litival = p->konst.ci;
 					break;
 				}
 			}
@@ -232,7 +232,7 @@ switch(type)
 	case TYLOGICAL:
 	case TYSHORT:
 	case TYLONG:
-		prconi(asmfile, type, p->const.ci);
+		prconi(asmfile, type, p->konst.ci);
 		break;
 
 	case TYCOMPLEX:
@@ -248,15 +248,15 @@ switch(type)
 
 	flpt:
 		for(i = 0 ; i < k ; ++i)
-			prconr(asmfile, type, p->const.cd[i]);
+			prconr(asmfile, type, p->konst.cd[i]);
 		break;
 
 	case TYCHAR:
-		putstr(asmfile, p->const.ccp, p->vleng->const.ci);
+		putstr(asmfile, p->konst.ccp, p->vleng->konst.ci);
 		break;
 
 	case TYADDR:
-		prcona(asmfile, p->const.ci);
+		prcona(asmfile, p->konst.ci);
 		break;
 
 	default:

@@ -34,7 +34,7 @@ double arg;
 	return(sinus(arg, 0));
 }
 
-static double
+double
 sinus(arg, quad)
 double arg;
 int quad;

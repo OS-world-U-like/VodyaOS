@@ -52,7 +52,7 @@ eqn(argc,argv) int argc; char *argv[];{
 				while (putchar(gtc()) != '\n');
 		}
 		else if (type == lefteq)
-			inline();
+			doinline();
 		else
 			printf("%s",in);
 	}
@@ -73,7 +73,7 @@ getline(s) register char *s; {
 	return(c);
 }
 
-inline() {
+doinline() {
 	int ds;
 
 	printf(".nr 99 \\n(.s\n.nr 98 \\n(.f\n");

@@ -1,4 +1,4 @@
-char Lw[256-32] {	/*L Geneva Light*/
+char Lw[256-32] = {	/*L Geneva Light*/
 12,	 /*space*/
 11,	 /*!*/
 0,	 /*"*/

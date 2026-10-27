@@ -2,7 +2,7 @@
 Modified for Commercial II
 and with +, -, and = for equations
 */
-char Sw[256-32] {	/*Special font widths*/
+char Sw[256-32] = {	/*Special font widths*/
 0,0,	 	/*.=Sw+042-40*/
 13,	 /*"*/
 29,	 /*#*/

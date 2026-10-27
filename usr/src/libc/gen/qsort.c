@@ -1,6 +1,6 @@
 
-static int	(*qscmp)();
-static int	qses;
+int	(*qscmp)();
+int	qses;
 
 qsort(a, n, es, fc)
 char *a;
@@ -13,7 +13,7 @@ int (*fc)();
 	qs1(a, a+n*es);
 }
 
-static qs1(a, l)
+qs1(a, l)
 char *a, *l;
 {
 	register char *i, *j;
@@ -84,7 +84,7 @@ loop:
 	}
 }
 
-static qsexc(i, j)
+qsexc(i, j)
 char *i, *j;
 {
 	register char *ri, *rj, c;
@@ -100,7 +100,7 @@ char *i, *j;
 	} while(--n);
 }
 
-static qstexc(i, j, k)
+qstexc(i, j, k)
 char *i, *j, *k;
 {
 	register char *ri, *rj, *rk;

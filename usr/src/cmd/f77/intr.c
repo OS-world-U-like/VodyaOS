@@ -305,7 +305,7 @@ int nargs;
 int i, rettype;
 struct addrblock *ap;
 register struct specblock *sp;
-struct exprblock *q, *inline();
+struct exprblock *q, *inline0();
 register chainp cp;
 struct constblock *mkcxcon();
 expptr ep;
@@ -392,7 +392,7 @@ switch(packed.bits.f1)
 		if(mtype != sp->atype)
 			goto badtype;
 		fixargs(YES, argsp);
-		if(q = inline(sp-spectab, mtype, argsp->listp))
+		if(q = inline0(sp-spectab, mtype, argsp->listp))
 			{
 			frchain( &(argsp->listp) );
 			free(argsp);
@@ -514,7 +514,7 @@ fatal1("intraddr: impossible f1=%d\n", packed.bits.f1);
 
 
 
-struct exprblock *inline(fno, type, args)
+struct exprblock *inline0(fno, type, args)
 int fno;
 int type;
 chainp args;

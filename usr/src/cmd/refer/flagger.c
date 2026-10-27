@@ -2,7 +2,7 @@
 char wds[100][40];
 int synwd[100];
 int mark[100];
-int justw 0;
+int justw = 0;
 extern int comcount;
 int blank[100];
 int wdp, wdf;

@@ -41,9 +41,9 @@ e	: e '|' e	={ $$ = ($1!=0 || $3!=0) ? 1 : 0; }
 
 %%
 
-yylex() {
-	extern char *pe;
+extern char *pe;
 
+yylex() {
 	while (*pe==' ' || *pe=='\t' || *pe=='\n')
 		pe++;
 	switch(*pe) {

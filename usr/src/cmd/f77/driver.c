@@ -1,4 +1,4 @@
-char *xxxvers[] = "\n FORTRAN 77 DRIVER, VERSION 1.13,   20 APRIL 1979\n";
+char *xxxvers = "\n FORTRAN 77 DRIVER, VERSION 1.13,   20 APRIL 1979\n";
 #include <stdio.h>
 #include <ctype.h>
 #include "defines"
@@ -230,7 +230,7 @@ endfor:
 loadargs[0] = ldname;
 #if TARGET == PDP11
 	if(nofloating)
-		*loadp++ = (profileflag ? NOFLPROF : NOFLFOOT);
+		*loadp++ = (profileflag ? NOFLPROFFOOT : NOFLFOOT);
 	else
 #endif
 *loadp++ = (profileflag ? proffoot : footname);
@@ -807,7 +807,7 @@ if(!debugflag && fn!=NULL && *fn!='\0')
 
 
 
-LOCAL fname(name, suff)
+fname(name, suff)
 char *name, *suff;
 {
 sprintf(name, "fort%d.%s", pid, suff);
@@ -918,7 +918,7 @@ return(YES);
 
 
 
-static fatal(t)
+fatal(t)
 char *t;
 {
 fprintf(diagfile, "Compiler error in file %s: %s\n", infname, t);
@@ -931,7 +931,7 @@ exit(1);
 
 
 
-static fatal1(t,d)
+fatal1(t,d)
 char *t, *d;
 {
 char buff[100];

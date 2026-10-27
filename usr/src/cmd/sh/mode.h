@@ -21,6 +21,11 @@ TYPE int	PIPE[];
 TYPE char	*STKPTR;
 TYPE char	*BYTPTR;
 
+struct sysnod {
+	STRING	sysnam;
+	INT	sysval;
+};
+
 STRUCT stat	STATBUF;	/* defined in /usr/sys/stat.h */
 STRUCT blk	*BLKPTR;
 STRUCT fileblk	FILEBLK;
@@ -52,9 +57,8 @@ STRUCT sysnod	SYSTAB[];
  * into an Rvalue so two cheats
  * are necessary, one for each context.
  */
-union { int _cheat;};
-#define Lcheat(a)	((a)._cheat)
-#define Rcheat(a)	((int)(a))
+#define Lcheat(a)	(*(int *)&(a))
+#define Rcheat(a)	((int)(long)(a))
 
 
 /* address puns for storage allocation */
@@ -73,8 +77,6 @@ UNION {
 
 
 /* for functions that do not return values */
-struct void {INT vvvvvvvv;};
-
 
 /* heap storage */
 struct blk {
@@ -107,15 +109,22 @@ struct filehdr {
 	CHAR	_fbuf[1];
 };
 
-struct sysnod {
-	STRING	sysnam;
-	INT	sysval;
-};
-
 /* this node is a proforma for those that follow */
+/* The V7 shell "overlays" every tree node type on top of struct
+ * trenod and reaches foreign members through a plain TREPTR.  The
+ * PDP-11 compiler tolerated this; give the union of the common
+ * layouts explicitly so modern compilers accept it. */
 struct trenod {
-	INT	tretyp;
-	IOPTR	treio;
+	union { INT tretyp; INT forktyp; INT comtyp; INT iftyp; INT whtyp;
+		INT fortyp; INT swtyp; INT partyp; INT lsttyp; INT iofile;
+		ARGPTR regptr; };
+	union { IOPTR treio; IOPTR forkio; IOPTR comio; TREPTR iftre;
+		TREPTR whtre; TREPTR fortre; STRING swarg; TREPTR partre;
+		TREPTR lstlef; STRING ioname; TREPTR regcom; };
+	union { TREPTR forktre; ARGPTR comarg; TREPTR thtre; TREPTR dotre;
+		STRING fornam; REGPTR swlst; TREPTR lstrit; IOPTR ionxt; };
+	union { ARGPTR comset; TREPTR eltre; COMPTR forlst; IOPTR iolst;
+		REGPTR regnxt; };
 };
 
 /* dummy for access only */

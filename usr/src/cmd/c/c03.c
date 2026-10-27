@@ -248,11 +248,11 @@ struct hshtab *tptr;
 		}
 		o = decl1(skw, tptr, isunion?0:offset, NULL);
 		if (isunion) {
-			o =+ align(CHAR, o, 0);
+			o += align(CHAR, o, 0);
 			if (o>offset)
 				offset = o;
 		} else
-			offset =+ o;
+			offset += o;
 	} while ((o=symbol()) == COMMA);
 	if (o==RBRACE) {
 		peeksym = o;
@@ -293,7 +293,7 @@ struct hshtab *atptr, *absname;
 		peeksym = -1;
 		t1 = conexp();
 		elsize = align(tptr->htype, offset, t1);
-		bitoffs =+ t1;
+		bitoffs += t1;
 		return(elsize);
 	}
 	t1 = getype(&dim, absname);
@@ -304,7 +304,7 @@ struct hshtab *atptr, *absname;
 		for (a=0; type&XTYPE;) {
 			if ((type&XTYPE)==ARRAY)
 				dim.dimens[dim.rank++] = tptr->hsubsp[a++];
-			type =>> TYLEN;
+			type >>= TYLEN;
 		}
 	}
 	type = tptr->htype & ~TYPE;
@@ -314,9 +314,9 @@ struct hshtab *atptr, *absname;
 			type = t1 = 0;
 		}
 		type = type<<TYLEN | (t1 & XTYPE);
-		t1 =>> TYLEN;
+		t1 >>= TYLEN;
 	}
-	type =| tptr->htype&TYPE;
+	type |= tptr->htype&TYPE;
 	if (absname)
 		defsym = absname;
 	dsym = defsym;
@@ -391,18 +391,18 @@ struct hshtab *atptr, *absname;
 				dsym->hstrp = gblock(sizeof(*fldp));
 				funcbase = curbase;
 			}
-			dsym->hflag =| FFIELD;
+			dsym->hflag |= FFIELD;
 			dsym->hstrp->bitoffs = bitoffs;
 			dsym->hstrp->flen = t1;
-			bitoffs =+ t1;
+			bitoffs += t1;
 		} else
 			a = align(type, offset, 0);
-		elsize =+ a;
-		offset =+ a;
+		elsize += a;
+		offset += a;
 		if (++nmems >= NMEMS) {
 			error("Too many structure members");
-			nmems =- NMEMS/2;
-			memlist =- NMEMS/2;
+			nmems -= NMEMS/2;
+			memlist -= NMEMS/2;
 		}
 		if (a)
 			*memlist++ = &structhole;
@@ -422,7 +422,7 @@ struct hshtab *atptr, *absname;
 		peeksym = a;
 	if (skw==AUTO) {
 	/*	if (STAUTO < 0) {	*/
-			autolen =- rlength(dsym);
+			autolen -= rlength(dsym);
 			dsym->hoffset = autolen;
 			if (autolen < maxauto)
 				maxauto = autolen;
@@ -473,7 +473,7 @@ struct phshtab *asp;
 	maxdecl = funcbase = curbase;
 	cpysymb(nsp, sp);
 	sp->hclass = 0;
-	sp->hflag =& (FKEYW|FMOS);
+	sp->hflag &= (FKEYW|FMOS);
 	sp->htype = 0;
 	sp->hoffset = 0;
 	sp->hblklev = blklev;
@@ -625,7 +625,7 @@ align(type, offset, aflen)
 	t = type;
 	ftl = "Field too long";
 	if (flen==0) {
-		a =+ (NBPC+bitoffs-1) / NBPC;
+		a += (NBPC+bitoffs-1) / NBPC;
 		bitoffs = 0;
 	}
 	while ((t&XTYPE)==ARRAY)
@@ -641,14 +641,14 @@ align(type, offset, aflen)
 				error(ftl);
 			if (flen+bitoffs > NBPW) {
 				bitoffs = 0;
-				a =+ NCPW;
+				a += NCPW;
 			}
 		} else if (type==CHAR) {
 			if (flen > NBPC)
 				error(ftl);
 			if (flen+bitoffs > NBPC) {
 				bitoffs = 0;
-				a =+ 1;
+				a += 1;
 			}
 		} else
 			error("Bad type for field");

@@ -13,9 +13,9 @@ describe (file, argc, argv, rf)
 	char *file, *argv[];
 	FILE *rf;
 {
-	int ns 0;
+	int ns = 0;
 	char linbuf[512], *line, *p;
-	int i, wrflg 0, wrote 0, ln 0;
+	int i, wrflg = 0, wrote = 0, ln = 0;
 	FILE *fi;
 fi = fopen(file, "r");
 if (fi==NULL) return;
@@ -51,14 +51,14 @@ for(sp=sents; sp<sents+ns; sp++)
 	output(sp->text, 0, rf);
 }
 
-int state 0;
-int oldc '\n';
+int state = 0;
+int oldc = '\n';
 gsent(buf, bsize, fi)
 	char *buf;
 	FILE *fi;
 {
 	char *s;
-	int c, leng 0;
+	int c, leng = 0;
 /* state
 	0: looking for '.' 
 	1: looking for nl or space aftter '.'
@@ -132,7 +132,7 @@ output (s, ln, rf)
 	FILE *rf;
 {
 	char *t;
-	int more 1;
+	int more = 1;
 	t=s;
 	while (more)
 		{
@@ -157,7 +157,7 @@ count(isent, nw, wds)
 	char *wds[], *isent;
 {
 int saw[50], ct;
-char sb[512], *s sb;
+char sb[512], *s = sb;
 int i, c;
 for(i=1; i<nw; i++)
 	saw[i]=0;
@@ -197,8 +197,8 @@ update( ns, line, kov)
 	char *line;
 {
 /* see if sentence array should be updated */
-int lval 100; char *ob;
-struct sf *sp, *least NULL;
+int lval = 100; char *ob;
+struct sf *sp, *least = NULL;
 if (kov<=0) return (ns) ; /* no*/
 if (ns<NS)
 	{

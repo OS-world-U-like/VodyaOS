@@ -1,6 +1,8 @@
 #include "defs"
 #include <signal.h>
 
+int intrupt();
+
 dosys(comstring,nohalt)
 register char *comstring;
 int nohalt;

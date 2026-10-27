@@ -128,7 +128,7 @@ loop:
 		}
 	}
 	if(match("clock")) {
-		clktim[mantom] =+ clock();
+		clktim[mantom] += clock();
 		ctime("white", clktim[0]);
 		ctime("black", clktim[1]);
 		goto loop;
@@ -190,7 +190,7 @@ cooin()
 	if(a<'a' || a>'h') return(0);
 	b = sbufp[1];
 	if(b<'1' || b>'8') return(0);
-	sbufp =+ 2;
+	sbufp += 2;
 	a = (a-'a')+8*('8'-b);
 	return(a);
 }

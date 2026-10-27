@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <setjmp.h>
 
-static jmp_buf jmp;
+jmp_buf jmp;
 
 sleep(n)
 unsigned n;
@@ -33,7 +33,6 @@ unsigned n;
 	/*NOTREACHED*/
 }
 
-static
 sleepx()
 {
 	longjmp(jmp, 1);

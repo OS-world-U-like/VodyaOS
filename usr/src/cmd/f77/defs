@@ -32,7 +32,6 @@ extern long int headoffset;
 
 extern char token [ ];
 extern int toklen;
-extern int yylval;
 extern int lineno;
 extern char *infname;
 extern int needkwd;
@@ -263,7 +262,7 @@ struct constblock
 	unsigned tag:4;
 	unsigned vtype:4;
 	expptr vleng;
-	union constant const;
+	union constant konst;
 	};
 
 
@@ -300,12 +299,26 @@ struct errorblock
 
 union expression
 	{
-	struct exprblock;
-	struct addrblock;
-	struct constblock;
-	struct errorblock;
-	struct listblock;
-	struct primblock;
+	struct	{
+		unsigned tag:4;
+		unsigned vtype:4;
+		unsigned vclass:4;
+		unsigned vstg:4;
+		expptr vleng;
+		int memno;
+		expptr memoffset;
+		unsigned istemp:1;
+		unsigned ntempelt:10;
+		unsigned opcode:6;
+		expptr leftp;
+		expptr rightp;
+		chainp listp;
+		struct nameblock *namep;
+		struct listblock *argsp;
+		expptr fcharp;
+		expptr lcharp;
+		union constant konst;
+		};
 	} ;
 
 
@@ -372,25 +385,72 @@ struct eqvchain
 
 union chainedblock
 	{
-	struct chain;
-	struct entrypoint;
-	struct rplblock;
-	struct eqvchain;
-	};
+	struct	{
+		chainp nextp;
+		tagptr datap;
+		struct extsym *entryname;
+		chainp arglist;
+		int entrylabel;
+		int typelabel;
+		ptr enamep;
+		struct nameblock *rplnp;
+		ptr rplvp;
+		struct exprblock *rplxp;
+		int rpltag;
+		ptr eqvitem;
+		ftnint eqvoffset;
+		};
+	} ;
 
 
 
 union taggedblock
 	{
-	struct nameblock;
-	struct paramblock;
-	struct exprblock;
-	struct constblock;
-	struct listblock;
-	struct addrblock;
-	struct errorblock;
-	struct primblock;
-	struct impldoblock;
+	struct	{
+		unsigned tag:4;
+		unsigned vtype:4;
+		unsigned vclass:4;
+		unsigned vstg:4;
+		expptr vleng;
+		char varname[VL];
+		unsigned vdovar:1;
+		unsigned vdcldone:1;
+		unsigned vadjdim:1;
+		unsigned vsave:1;
+		unsigned vprocclass:3;
+		unsigned vregno:4;
+		union	{
+			int varno;
+			chainp vstfdesc;	/* points to (formals, expr) pair */
+			struct intrpacked intrdesc;	/* bits for intrinsic function */
+			} vardesc;
+		struct dimblock *vdim;
+		int voffset;
+		ptr paramval;
+		unsigned opcode:6;
+		expptr leftp;
+		expptr rightp;
+		union constant konst;
+		chainp listp;
+		struct nameblock *namep;
+		struct listblock *argsp;
+		expptr fcharp;
+		expptr lcharp;
+		int memno;
+		expptr memoffset;
+		unsigned istemp:1;
+		unsigned ntempelt:10;
+		unsigned isactive:1;
+		unsigned isbusy:1;
+		struct nameblock *varnp;
+		struct constblock *varvp;
+		expptr implb;
+		expptr impub;
+		expptr impstep;
+		ftnint impdiff;
+		ftnint implim;
+		chainp datalist;
+		};
 	} ;
 
 
@@ -412,6 +472,86 @@ struct literal
 
 extern struct literal litpool[ ];
 extern int nliterals;
+
+/* merged block type: the old compiler resolved structure member names
+   globally, so parser stack values (YYSTYPE) can point at any block;
+   anyblock carries the superset of all members ever accessed this way */
+struct anyblock
+	{
+	unsigned tag:4;
+	unsigned vtype:4;
+	unsigned vclass:4;
+	unsigned vstg:4;
+	expptr vleng;
+	int memno;
+	expptr memoffset;
+	unsigned istemp:1;
+	unsigned ntempelt:10;
+	unsigned opcode:6;
+	expptr leftp;
+	expptr rightp;
+	chainp listp;
+	struct nameblock *namep;
+	struct listblock *argsp;
+	expptr fcharp;
+	expptr lcharp;
+	union constant konst;
+	char varname[VL];
+	unsigned vdovar:1;
+	unsigned vdcldone:1;
+	unsigned vadjdim:1;
+	unsigned vsave:1;
+	unsigned vprocclass:3;
+	unsigned vregno:4;
+	union	{
+		int varno;
+		chainp vstfdesc;
+		struct intrpacked intrdesc;
+		} vardesc;
+	struct dimblock *vdim;
+	int voffset;
+	ptr paramval;
+	unsigned isactive:1;
+	unsigned isbusy:1;
+	struct nameblock *varnp;
+	struct constblock *varvp;
+	expptr implb;
+	expptr impub;
+	expptr impstep;
+	ftnint impdiff;
+	ftnint implim;
+	chainp datalist;
+	chainp nextp;
+	tagptr datap;
+	struct extsym *entryname;
+	chainp arglist;
+	int entrylabel;
+	int typelabel;
+	ptr enamep;
+	struct nameblock *rplnp;
+	ptr rplvp;
+	struct exprblock *rplxp;
+	int rpltag;
+	ptr eqvitem;
+	ftnint eqvoffset;
+	int labelno;
+	unsigned blklevel:8;
+	unsigned labused:1;
+	unsigned labinacc:1;
+	unsigned labdefined:1;
+	unsigned labtype:2;
+	ftnint stateno;
+	char extname[XL];
+	unsigned extstg:4;
+	unsigned extsave:1;
+	unsigned extinit:1;
+	ptr extp;
+	ftnint extleng;
+	ftnint maxleng;
+	};
+typedef struct anyblock *anyp;
+#define YYSTYPE anyp
+extern YYSTYPE yylval;
 
 
 

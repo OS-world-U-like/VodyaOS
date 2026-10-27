@@ -1,5 +1,8 @@
 #include "r.h"
 
+/* V7 yacc kept yyval global; bison makes it local to yyparse */
+int yyval;
+
 int	swlevel	= -1;
 int	swexit[5];
 int	nextcase[5];

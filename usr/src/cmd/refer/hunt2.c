@@ -1,17 +1,18 @@
 # include "refer..c"
-static int *coord 0;
+static int *coord = 0;
 int hh[50]; extern int *hfreq, hfrflg, hcomp(), hexch();
 extern int prfreqs;
 
+union ptr {unsigned *a; long *b;};
 doquery(hpt, nhash, fb, nitem, qitem, master)
-	union ptr {unsigned *a; long *b;} master;
+	union ptr master;
 	long *hpt;
 	FILE *fb;
 	char *qitem[];
 {
 long k;
 union ptr prevdrop;
-int nf 0, best 0, nterm 0, i, g, j;
+int nf = 0, best = 0, nterm = 0, i, g, j;
 int *prevcoord;
 long lp;
 extern int lmaster, colevel, reached;
@@ -185,7 +186,7 @@ fprintf(stderr,"now have %d items\n",g);
 # endif
 	if (colevel>0)
 	for ( ; j<nf; j++)
-		if ((iflong?prevcoord.b[j]:prevcoord.a[j])+colevel > nterm)
+		if (prevcoord[j]+colevel > nterm)
 			{
 			_assert(g<lmaster);
 			if (iflong)

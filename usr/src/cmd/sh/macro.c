@@ -10,12 +10,12 @@
 #include	"defs.h"
 #include	"sym.h"
 
-LOCAL CHAR	quote;	/* used locally */
-LOCAL CHAR	quoted;	/* used locally */
+ CHAR	quote;	/* used locally */
+ CHAR	quoted;	/* used locally */
 
 
 
-LOCAL STRING	copyto(endch)
+ STRING	copyto(endch)
 	REG CHAR	endch;
 {
 	REG CHAR	c;
@@ -26,7 +26,7 @@ LOCAL STRING	copyto(endch)
 	IF c!=endch THEN error(badsub) FI
 }
 
-LOCAL	skipto(endch)
+	skipto(endch)
 	REG CHAR	endch;
 {
 	/* skip chars up to } */
@@ -46,7 +46,7 @@ LOCAL	skipto(endch)
 	IF c!=endch THEN error(badsub) FI
 }
 
-LOCAL	getch(endch)
+	getch(endch)
 	CHAR		endch;
 {
 	REG CHAR	d;
@@ -165,7 +165,7 @@ STRING	macro(as)
 	return(fixstak());
 }
 
-LOCAL	comsubst()
+	comsubst()
 {
 	/* command substn */
 	FILEBLK		cb;
@@ -225,7 +225,7 @@ subst(in,ot)
 	pop();
 }
 
-LOCAL	flush(ot)
+	flush(ot)
 {
 	write(ot,stakbot,staktop-stakbot);
 	IF flags&execpr THEN write(output,stakbot,staktop-stakbot) FI

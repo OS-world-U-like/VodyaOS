@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <mp.h>
+extern struct passwd *getpwuid();
+extern struct passwd *getpwnam();
 extern MINT *x, *b, *one, *c64, *t45, *z, *q, *r, *two, *t15;
 extern char buf[256];
 #ifdef debug
