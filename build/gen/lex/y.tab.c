@@ -1229,12 +1229,12 @@ yyreduce:
 #line 45 "build/gen/lex/pre.y"
         {	scopy(yyvsp[-1],dp);
 		def[dptr] = dp;
-		dp =+ slength(yyvsp[-1]) + 1;
+		dp += slength(yyvsp[-1]) + 1;
 		scopy(yyvsp[0],dp);
 		subs[dptr++] = dp;
 		if(dptr >= DEFSIZE)
 			error("Too many definitions");
-		dp =+ slength(yyvsp[0]) + 1;
+		dp += slength(yyvsp[0]) + 1;
 		if(dp >= dchar+DEFCHAR)
 			error("Definitions too long");
 		subs[dptr]=def[dptr]=0;	/* for lookup - require ending null */
@@ -1848,7 +1848,7 @@ yylex(){
 							sname[sptr] = 0;	/* required by lookup */
 							if(sptr >= STARTSIZE)
 								error("Too many start conditions");
-							sp =+ slength(sp) + 1;
+							sp += slength(sp) + 1;
 							if(sp >= schar+STARTCHAR)
 								error("Start conditions too long");
 							}
@@ -2106,7 +2106,7 @@ yylex(){
 				else {
 					yylval = ccptr;
 					scopy(token,ccptr);
-					ccptr =+ slength(token) + 1;
+					ccptr += slength(token) + 1;
 					if(ccptr >= ccl+CCLSIZE)
 						error("Too many large character classes");
 					}

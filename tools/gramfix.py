@@ -79,6 +79,45 @@ def transform_rules(s, start, end):
         out.append(c); i += 1
     return ''.join(out), blocks
 
+def fix_oldops(s):
+    """Rewrite pre-K&R assignment operators (=+ =- =| =& =^ =<< =>> plus
+    the =* =/ =% spellings) into modern ones.  Only applied outside strings,
+    chars and comments, and only when the old form is unambiguous: the
+    operand must follow the operator (not a unary sign form like 'x = -1'
+    which modern code writes with a space after '=')."""
+    out = list(s)
+    i = 0; n = len(s)
+    while i < n:
+        c = s[i]
+        if c in '"\'':
+            i = scan_string(s, i, n); continue
+        if c=='/' and i+1<n and s[i+1]=='*':
+            i = s.find('*/', i+2); i = n if i < 0 else i+2; continue
+        if c=='/' and i+1<n and s[i+1]=='/':
+            i = s.find('\n', i); i = n if i < 0 else i; continue
+        if c=='=' and i>0:
+            prev = s[i-1]
+            if prev not in '<>!+-*/%&|^=':
+                for old, new in (('<<','<<='),('>>','>>='),
+                                 ('+','+='),('-','-='),('*','*='),
+                                 ('/','/='),('%','%='),('&','&='),
+                                 ('|','|='),('^','^=')):
+                    if s.startswith(old, i+1):
+                        j = i+1+len(old)
+                        # only rewrite the V7 form 'x =+ y' (space after the
+                        # operator); leave 'x = -1' / 'x = *p' style alone
+                        if j < n and s[j] in ' \t\n':
+                            out[i:i+1+len(old)] = new
+                            i += len(new)
+                        else:
+                            i += 1
+                        break
+                else:
+                    i += 1
+                continue
+        i += 1
+    return ''.join(out)
+
 def transform(src):
     s = src.replace('%term','%token')
     marks = find_sections(s)
@@ -97,7 +136,7 @@ def transform(src):
             decls = decls[:m.end()-2] + ''.join(blocks) + decls[m.end()-2:]
         else:
             decls = decls.rstrip('\n') + '\n%{' + ''.join(blocks) + '%}\n'
-    return decls + '%%' + newrules + ('%%' + trailer if trailer else '')
+    return fix_oldops(decls + '%%' + newrules + ('%%' + trailer if trailer else ''))
 
 if __name__ == '__main__':
     src, dst = sys.argv[1], sys.argv[2]

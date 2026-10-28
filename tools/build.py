@@ -28,7 +28,7 @@ ARCHCONF = {
         ld=['ld.lld', '-m', 'elf_x86_64'],
         ar='llvm-ar',
         archcflags=[],
-        kernel_cflags=['-mno-red-zone'],
+        kernel_cflags=['-mno-red-zone', '-mcmodel=kernel'],
         image_base='0x400000',
         kernel_ld='port/x86_64/kernel/kernel.ld',
         kernel_extra=['start.o', 'context.o'],   # from port/x86_64/kernel
@@ -141,9 +141,15 @@ def build_libs():
         'libmp':   sorted(glob.glob('usr/src/libmp/*.c')),
         'libdbm':  ['usr/src/libdbm/dbm.c'],
         'libplot': ['port/%s/libplot/plotstub.c' % ARCH],
-        'libF77':  sorted(glob.glob('usr/src/libF77/*.c')),
+        # main.c excluded: it carries the Fortran-driver main (MAIN__ startup);
+        # pulled in via commons/sigdie it collides with C programs' own main.
+        # Reinstate when the f77 driver links real Fortran programs.
+        'libF77':  [s for s in sorted(glob.glob('usr/src/libF77/*.c'))
+                    if not s.endswith('/main.c')],
         'libI77':  sorted(glob.glob('usr/src/libI77/*.c')),
-        'libln':   sorted(glob.glob('usr/src/cmd/lex/lib/*.c')),
+        # lex's default main; userland always provides its own (lmain.c for lex)
+        'libln':   [s for s in sorted(glob.glob('usr/src/cmd/lex/lib/*.c'))
+                    if not s.endswith('/main.c')],
     }
     for lib, srcs in groups.items():
         tasks, objs = [], []
@@ -189,9 +195,21 @@ def build_kernel():
     ctxobj = out('obj/kernel/context.o')
     run([('port/%s/kernel/start.S' % ARCH, startobj, [], True),
          ('port/%s/kernel/context.S' % ARCH, ctxobj, [], True)])
+    # Limine boot protocol support (only for arches that provide it)
+    limsrc = 'port/%s/kernel/limine.S' % ARCH
+    limc = 'port/%s/kernel/limine.c' % ARCH
+    limobjs = []
+    limtasks = []
+    if os.path.exists(limsrc):
+        limtasks.append((limsrc, out('obj/kernel/limine.o'), [], True))
+    if os.path.exists(limc):
+        limtasks.append((limc, out('obj/kernel/limine.c.o'), [], True))
+    if limtasks:
+        run(limtasks)
+        limobjs = [t[1] for t in limtasks]
     elf = out('kernel.elf')
     cmd = ARCHCONF[ARCH]['ld'] + ['-T', ARCHCONF[ARCH]['kernel_ld'],
-        '-o', elf, startobj, ctxobj, confobj,
+        '-o', elf, startobj, ctxobj, confobj] + limobjs + [
         out('lib/libksys.a'), out('lib/libkdev.a')]
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
@@ -204,7 +222,7 @@ def build_kernel():
 # ---------------------------------------------------------------- userland
 MAIN_RE = re.compile(r'^\s*(?:int\s+)?main\s*\(', re.M)
 DEFAULT_LIBS = ['lib/libc.a', 'lib/libm.a', 'lib/libmp.a', 'lib/libdbm.a',
-                'lib/libplot.a']
+                'lib/libplot.a', 'lib/libln.a']   # libln: lex yywrap/reject for lex-generated programs
 
 def P(name, srcs, inc=None, defs=None, libs=None, link=True, drop=None):
     return dict(name=name, srcs=srcs, inc=inc or [], defs=defs or [],
@@ -253,7 +271,7 @@ def special_programs():
     G = lambda *fs: [R + '/' + f for f in fs]
     pr.append((R, [
         P('mkey',   G('mkey1.c','mkey2.c','mkey3.c','deliv2.c'), [R]),
-        P('inv',    G('inv1.c','inv2.c','inv3.c','inv5.c','inv6.c','deliv2.c','thash.c'), [R]),
+        P('inv',    G('inv1.c','inv2.c','inv3.c','inv5.c','inv6.c','deliv2.c'), [R]),
         P('hunt',   G('hunt1.c','hunt2.c','hunt3.c','hunt5.c','hunt6.c','hunt7.c','hunt8.c','hunt9.c','refer3.c','shell.c','deliv2.c','glue4.c','glue5.c'), [R]),
         P('refer',  G('glue1.c','glue2.c','glue3.c','glue4.c','glue5.c','refer0.c','refer1.c','refer2.c','refer4.c','refer5.c','refer6.c','refer7.c','refer8.c','hunt2.c','hunt3.c','hunt5.c','hunt6.c','hunt7.c','hunt8.c','hunt9.c','mkey3.c','shell.c','deliv2.c'), [R]),
     ]))
@@ -317,7 +335,7 @@ def special_programs():
     F = C + '/f77'
     f77p1 = ['main.c','init.c','gram','lex.c','proc.c','equiv.c','data.c',
              'expr.c','exec.c','intr.c','io.c','misc.c','error.c','put.c',
-             'putdmr.c','pdp11.c','pdp11x.c']
+             'putdmr.c','pdp11.c','pdp11x.c','setbounds.c']
     f77p1 = [(F + '/' + f) if f.endswith('.c') else 'build/gen/f77/gram.c' for f in f77p1]
     pr.append((F, [P('f77', [F + '/driver.c', F + '/pdp11x.c'], [F, 'build/gen/f77'], F77_DFLAGS),
                    P('f77pass1', f77p1, [F, 'build/gen/f77'], F77_DFLAGS)]))
@@ -398,8 +416,13 @@ def build_userland():
                     extra = [f for f in extra if f not in p['drop']]
                 if p['defs']:
                     extra = extra + p['defs']
-                obj = out('obj/cmd/%s_%s.o' % (os.path.basename(d),
-                          re.sub(r'\W+', '_', src)[:-2]))
+                # obj name must distinguish macro variants of the same source
+                # (e.g. troff's n1.c vs nroff's -DNROFF n1.c) or they overwrite
+                # each other at the same path
+                dtag = ('_' + re.sub(r'\W+', '_',
+                                     '_'.join(p['defs']))) if p['defs'] else ''
+                obj = out('obj/cmd/%s_%s%s.o' % (os.path.basename(d),
+                          re.sub(r'\W+', '_', src)[:-2], dtag))
                 OBJS[key] = obj
                 tasks.append((src, obj, extra, False))
     run(tasks)
