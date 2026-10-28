@@ -6,6 +6,10 @@
 /build/lib/
 /build/obj/
 
+# GNU userland build (tools/build-gnu.sh) and its sources
+/build/gnu/
+/build/gnu-src/
+
 # scratch output from lex/awk runs
 lex.yy.c
 

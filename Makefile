@@ -10,6 +10,7 @@
 #   libs      libc, libm, libmp, libdbm, libplot, libF77, libI77, libln
 #   kernel    build/<ARCH>/kernel.elf
 #   userland  build/<ARCH>/bin/*
+#   gnu       GNU userland (bash/coreutils/grep, gcc + -static) -> build/gnu/bin
 #   gen       regenerate yacc/lex-derived sources into build/gen/
 #   image     UEFI boot image (GPT + ESP, Limine)
 #   run       boot the image in qemu (OVMF)
@@ -27,7 +28,7 @@ DRIVER = python3 tools/build.py --arch $(ARCH)
 LIMINE_DIR ?= limine
 BUILD_DIR := build/$(ARCH)
 
-.PHONY: all libs kernel userland gen clean image run
+.PHONY: all libs kernel userland gnu gen clean image run
 ifeq ($(strip $(ARCH_SUPPORTED)),yes)
 
 all:	libs kernel userland
@@ -41,8 +42,11 @@ kernel:	libs
 userland: libs
 	$(DRIVER) userland
 
-gen:
-	ARCH=$(ARCH) EMU=$(EMU) bash tools/gen.sh
+# GNU userland (GPL): bash, coreutils (single binary), grep, built with
+# gcc and statically linked (x86_64 Linux ABI).  Architecture-independent
+# for now -- revisit when non-x86_64 targets exist.
+gnu:
+	bash tools/build-gnu.sh
 
 # --- bootable image (Limine boot protocol, UEFI only) -----------------------
 # No legacy BIOS support by design.  Prerequisites: sfdisk, mkfs.vfat,
@@ -52,7 +56,7 @@ gen:
 
 IMG := $(BUILD_DIR)/vodya.img
 
-image:	kernel
+image:	kernel gnu
 	bash tools/mkimage.sh $(ARCH) $(BUILD_DIR)/kernel.elf \
 		tools/limine.conf $(LIMINE_DIR) $(IMG)
 

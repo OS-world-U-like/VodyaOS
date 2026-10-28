@@ -48,7 +48,7 @@ tools/gramfix.py             把 V7 yacc 旧语法（%term、`= action`、rules 
 tools/genawk.py              由 awk y.tab.h 生成 token.c（等价 V7 tokenscript 的 ed 脚本）
 tools/fixproctab.py          修正 awk proc 生成器输出里的 `[] {` 初始化
 tools/fixcgram.py            把 mip/cgram.c 的 enum yytokentype 换成 #define（与 manifest 的 #define 冲突）
-port/x86_64/kernel/          start.S / context.S / arch.c / kernel.ld（替代 V7 mch.s、l.s）
+port/x86_64/kernel/          start.S / context.S / arch.c / console.c / font.h / cjkfont.h / kernel.ld（替代 V7 mch.s、l.s）
 port/x86_64/libc/            start.S / setjmp.S / syscall.c / misc.c / format.c / scan.c
 port/x86_64/libm/math.c      frexp/ldexp/modf
 port/x86_64/libplot/plotstub.c  弱符号空实现（V7 的 libplot 是预编译 PDP-11 归档）
@@ -190,6 +190,7 @@ make libs                 # 只构建库
 make kernel               # 只构建 build/x86_64/kernel.elf
 make image                # UEFI 引导镜像 build/x86_64/vodya.img（见 §9）
 make userland             # 只构建 build/x86_64/bin
+make gnu                  # GNU 用户态（bash/coreutils/grep，gcc -static）→ build/gnu/bin
 make gen                  # 重新生成 build/gen（需要 bison；stage2 需要已构建 libc/lex）
 make clean                # 删除 build/x86_64
 
@@ -269,9 +270,10 @@ readelf -h build/x86_64/kernel.elf
 - 引导器 **Limine 8.7.0**（`limine/`，clone 自
   `github.com/limine-bootloader/limine` 的 `v8.x-binary` 分支，host 工具已 `make`）。
   启动链：OVMF/UEFI 固件 → `\EFI\BOOT\BOOTX64.EFI` → 读取
-  `/boot/limine/limine.conf` → 按 ELF PHDR 加载 `/boot/kernel.elf` → 跳入口。
-- 镜像：32MB 裸盘 + **GPT 单一 EFI 系统分区**（FAT16 —— 30MB 分区低于 FAT32
-  最小 65525 簇数，OVMF 的 FAT 驱动会拒绝 FAT32）。
+  `/boot/limine/limine.conf` → 按 ELF PHDR 加载 `/boot/kernel/kernel.elf` → 跳入口。
+- 镜像：**1GB 裸盘 + GPT 双分区**——p1 = 512MB EFI 系统分区（FAT32，UEFI
+  标准文件系统；旧 32MB 方案因低于 FAT32 的 65525 簇下限只能用 FAT16，扩容
+  后换 FAT32），p2 = 约 510MB btrfs 数据分区（未来的 rootfs，宿主可直接挂载）。
 - **内核必须高半区链接**：Limine 协议要求
   `vaddr = paddr + 0xffffffff80000000`（LIMINE_KERNEL_BASE），物理从 1MiB 起。
   Limine 进 long mode 后已开分页映射好内核与 HHDM，入口在链接地址直接可跑。
@@ -279,22 +281,42 @@ readelf -h build/x86_64/kernel.elf
   权限不同的 PHDR。
 - 内核 C 代码因此加 `-mcmodel=kernel`（默认 code model 的 32 位绝对重定位
   在高半区放不下）。V7 内核 C 全量随链，但入口暂只跑最小引导代码。
-- `.limine_requests` 段携带 base revision + framebuffer 请求；输出走
+- `.limine_requests` 段携带 base revision + framebuffer + memmap 请求；输出走
+  **framebuffer 文本控制台**（真机没有串口也能看到内核输出），同时镜像到
   **COM1 串口 0x3F8**（qemu `-serial` 可见）。`limine.conf` 里 `serial: yes`
   让 Limine 自身的菜单/报错也走串口，调试必备。
-- 最小入口 `limine_start`：打印横幅 + framebuffer 信息 + `hlt` 循环，
-  **暂不调用 V7 `main()`**（需要先有 IDT/中断/页表，见 §8.5）。
+- 最小入口 `limine_start`：初始化控制台，按 **systemd 风格**输出状态日志
+  （绿色 `[  OK  ]`/红色 `[FAILED]`，framebuffer 上真彩、串口上 ANSI 码），
+  逐项报告 framebuffer console、CPU 型号（CPUID 0x80000002-4）、内存映射
+  汇总，诊断细节（完整 memory map）用暗灰行打印，最后
+  `Reached target Early Boot.` 后 `hlt` 循环。**暂不调用 V7 `main()`**
+  （需要先有 IDT/中断/页表，见 §8.5）。**启动界面保持英文**；中文支持在
+  console 层（见 §9.5）。
 
 ### 9.2 文件
 
 ```
-port/x86_64/kernel/limine.S     请求结构（.limine_requests 段，magic/revision/framebuffer）
-port/x86_64/kernel/limine.c     limine_start()：串口初始化 + 横幅 + hlt
+port/x86_64/kernel/limine.S     请求结构（.limine_requests 段，magic/revision/framebuffer/memmap）
+port/x86_64/kernel/limine.c     limine_start()：console 初始化 + 横幅/CPU/内存映射 + hlt
+port/x86_64/kernel/console.c    framebuffer 文本控制台（UTF-8、ASCII+CJK 字形、滚动），
+                                逐字节镜像到 COM1；CONSOLE_NO_SERIAL 宏供宿主渲染测试
+port/x86_64/kernel/font.h       8x16 ASCII 字模（tools/genfont.py 生成，已入库）
+port/x86_64/kernel/cjkfont.h    16x16 GB2312 字模 7446 字形（tools/gencjkfont.py 生成，
+                                源为 GNU Unifont 15.1.05 hex，GPL 2+，已入库）
 port/x86_64/kernel/start.S      入口：设栈 → call limine_start → hlt（call main 已注释待启用）
 port/x86_64/kernel/kernel.ld    高半区脚本：KERNEL_BASE=0xffffffff80000000，各段 AT(paddr)，
                                 4K 对齐，KEEP(*(.limine_requests))
 tools/limine.conf               serial: yes / timeout / protocol: limine / kernel_path
-tools/mkimage.sh                32MB 裸盘 + GPT + FAT16 ESP，mtools/mkfs.vfat --offset 免 root 填充
+tools/mkimage.sh                1GB 裸盘 + GPT（p1 = FAT32 ESP 512MB，p2 = btrfs 数据分区），
+                                mtools/mkfs.vfat --offset 免 root 填充。ESP 布局（按内容分类归位）：
+                                ::/EFI/BOOT/BOOTX64.EFI、::/boot/limine/limine.conf、
+                                ::/boot/kernel/kernel.elf、::/bin（167 个 V7 工具）、
+                                ::/gnu/bin（GNU 用户态；FAT 无符号链接，coreutils 以
+                                `coreutils <cmd>` 调用）、::/source（usr/port/mk/tools/docs
+                                全源码树 + Makefile/LICENSE/README）；btrfs 分区尽力用
+                                losetup 播种 /usr/src 布局（CI 无权限时自动跳过）。
+tools/genfont.py                PSF → font.h（一次性生成器，产物已入库）
+tools/gencjkfont.py             Unifont hex → cjkfont.h（同上）
 Makefile                        image/run 目标（run 用 -bios /usr/share/ovmf/OVMF.fd）
 tools/build.py                  kernel_cflags 加 -mcmodel=kernel；链接目标追加 limine.o
 limine/                         v8.x-binary 分支（BOOTX64.EFI 等；无 CONFIG.md 文档，配置
@@ -307,9 +329,14 @@ limine/                         v8.x-binary 分支（BOOTX64.EFI 等；无 CONFI
 make kernel                 # build/x86_64/kernel.elf（高半区 ELF，entry 0xffffffff80000000）
 make image                  # build/x86_64/vodya.img（GPT + ESP，含 BOOTX64.EFI/kernel.elf/limine.conf）
 make run                    # qemu-system-x86_64 -M q35 -bios OVMF.fd -drive vodya.img -serial stdio
-# 预期串口输出：
-#   VodyaOS x86_64 kernel: booted via Limine
-#   framebuffer: 1280x800x32 @ ffff800080000000
+# 预期输出（framebuffer 与串口同文，systemd 风格；串口上带 ANSI 颜色码）：
+#   VodyaOS 0.1.0 (x86_64)
+#   Unix Seventh Edition lineage, booted via Limine
+#   [  OK  ] Initialized framebuffer text console (1280x800x32)
+#   [  OK  ] Detected CPU: QEMU Virtual CPU version 2.5+   <- 真机显示真实 CPU 型号
+#   [  OK  ] Enumerated memory map: 35 entries, 120 MiB usable
+#   <暗灰的完整 memory map 明细>
+#   [  OK  ] Reached target Early Boot.
 ```
 
 无显示环境调试时用 `-serial file:/tmp/serial.log -display none`，
@@ -330,3 +357,50 @@ make run                    # qemu-system-x86_64 -M q35 -bios OVMF.fd -drive vod
    用 `mkfs.vfat -F 16 -s 4 --offset <起始扇区>` + mtools `-i img@@"偏移字节"`。
 6. 升级 Limine 版本时 `port/x86_64/kernel/limine.S` 里的 base revision
    魔数要同步。
+
+### 9.5 真机适配：framebuffer 文本控制台与中文支持（2026-10-28 ✅）
+
+真机与 qemu 的最大差别之一是**输出**：qemu 调试看串口，真机用户看屏幕。
+console.c 在 Limine framebuffer 上自绘文本，串口照常镜像，两边同文：
+
+- **ASCII**：8x16 VGA 字模（`font.h`，取自宿主 `Lat2-VGA16.psf.gz`，
+  `tools/genfont.py` 生成入库，构建不依赖宿主字体）。
+- **中文（UTF-8）**：console 内置 UTF-8 解码状态机，非 ASCII 码点在
+  `cjkfont.h`（GB2312 全集 + U+2014，7446 个 16x16 字形，按 Unicode 码点
+  排序二分查找，半宽字形左对齐填充）里查字形，按**双宽（16px）**绘制。
+  查不到（如 U+00B7，unifont 无此字形）画全角"？"兜底。
+- 字模数据源自 **GNU Unifont 15.1.05**（GPL 2+），`tools/gencjkfont.py`
+  一次性生成后入库，重生成命令见脚本头注释。
+- 像素格式按 Limine 的 mask size/shift 组装，任意 32bpp RGB 布局都行；
+  非 RGB（indexed）或非 32bpp 时自动退化为纯串口输出。
+- **引导界面（Limine 菜单、内核启动横幅）按用户要求保持英文**；
+  中文字形能力供后续内核/用户态文本使用。
+- 渲染正确性可在宿主验证（无需进 qemu）：
+  `cc -DCONSOLE_NO_SERIAL` 编 console.c 配一个假 framebuffer，输出 PPM
+  看图；fb_scroll 的越界 bug 当初就是这样抓出来的（memmove 源偏移/长度
+  算错，只在滚屏时才炸）。
+
+## 10. GNU 用户态组装（2026-10-28 ✅）
+
+`tools/build-gnu.sh`（`make gnu`）用 **gcc** 构建静态链接的 GNU 软件，
+输出 `build/gnu/bin/`，x86_64 Linux ABI——宿主直接跑、qemu-x86_64 跑，
+内核 execve 就绪后即为 /bin 候选：
+
+| 软件 | 版本 | 形态 |
+|---|---|---|
+| bash | 5.2.37 | `--enable-static-link --without-bash-malloc`（qemu-user 下更稳） |
+| coreutils | 9.5 | `--enable-single-binary=symlinks` + `LDFLAGS=-static`：一个 `coreutils`
+二进制 + 全套命令符号链接（busybox 式 argv[0] 分发），全部命令仅占一个二进制的体积 |
+| grep | 3.11 | 静态单二进制 |
+
+- 源码缓存在 `build/gnu-src/`（gitignore），产物 `build/gnu/bin/` 同样不入库；
+  脚本幂等，`rm -rf build/gnu` 强制重建。
+- **镜像安装**：`mkimage.sh` 把真实文件拷到 `::/gnu/bin/`（bash、coreutils、
+  grep 三个）。FAT 无符号链接，coreutils 的命令链接进不了 ESP——在镜像里以
+  `coreutils <cmd>` 方式调用（busybox 风格），未来真 rootfs（btrfs）再放全套链接。
+- V7 工具树与 GNU 工具并存：`::/bin` = V7（167 个），`::/gnu/bin` = GNU，
+  运行期由未来的 init 决定 PATH。
+- 许可：整个仓库已改为 **GPL v3**（`LICENSE`）；原 `Caldera-license.pdf`、
+  `LICENSE.V7`、`ALU-USA-statement.pdf` 已按用户要求删除。注意：TUHS 的 V7
+  源码在历史上的 Caldera 许可下允许再分发，但其条款要求保留版权声明——
+  再发布时在 README 级别注明来源（现已如此）是最低限度的对齐做法。

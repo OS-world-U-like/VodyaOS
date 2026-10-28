@@ -21,9 +21,11 @@ VodyaOS 是一个以 Unix 血脉为底色的操作系统研究与重构项目,�
 | 部分 | 状态 |
 |---|---|
 | 用户态 | ✅ **167/167 全部链接成功**(V7 全套:sh、awk、sed、lex、yacc、ccom、troff/nroff、uucp……),sh / cat / sort / awk / sed / grep 等已在 qemu-x86_64 下实测可运行 |
+| GNU 用户态 | ✅ **bash 5.2 + coreutils 9.5 + grep 3.11** 以 gcc `-static` 构建(`make gnu`),coreutils 为单二进制 busybox 式分发;已装入镜像 `::/gnu/bin` |
 | libc / 库 | ✅ libc、libm、libmp、libdbm、libplot、libF77、libI77、libln 全部构建 |
 | 内核 | 🔨 V7 内核 C 代码全量随链(`-mcmodel=kernel`,高半区链接),但 `main()` 尚未启用——缺 IDT/时钟中断/页表 |
-| 引导 | ✅ **Limine UEFI-only 最小启动已打通**:OVMF → BOOTX64.EFI → kernel.elf → 串口横幅。按项目要求**只支持 UEFI,不做传统 BIOS** |
+| 引导 | ✅ **Limine UEFI-only 最小启动已打通**:OVMF → BOOTX64.EFI → kernel.elf → framebuffer 文本控制台(真机可见)+ 串口镜像,启动日志为 systemd 风格(绿色 `[  OK  ]`,CPU 型号 + 完整内存映射)。按项目要求**只支持 UEFI,不做传统 BIOS**;引导界面保持英文,内核 console 原生支持中文(UTF-8 + GB2312 点阵字模) |
+| 镜像内用户态 | ✅ 167 个 V7 工具已装入镜像 `::/bin`（GNU 工具在 `::/gnu/bin`、源码树在 `::/source`），等内核具备 execve 能力即可直接使用 |
 | CI | ✅ GitHub Actions 自动构建 + qemu 冒烟测试,每次构建产出可启动的 `vodya.img` |
 
 ## 快速开始
@@ -32,6 +34,7 @@ VodyaOS 是一个以 Unix 血脉为底色的操作系统研究与重构项目,�
 
 ```bash
 make                # libs + kernel + userland(默认 x86_64)
+make gnu            # GNU 用户态:bash/coreutils/grep(gcc -static,需联网下源码)
 make image          # UEFI 引导镜像 build/x86_64/vodya.img(需要 limine/ 下有 Limine v8.x-binary)
 make run            # qemu + OVMF 启动镜像,串口可见内核横幅
 
@@ -52,9 +55,9 @@ git clone --branch v8.x-binary --depth 1 \
 ```text
 VodyaOS/
 ├── usr/src/            Unix V7 源码树(cmd/ libc/ sys/ games/ ...),移植的主战场
-├── port/x86_64/        x86_64 架构相关(内核入口、链接脚本、Limine 请求)
+├── port/x86_64/        x86_64 架构相关(内核入口、framebuffer 控制台、字模、链接脚本、Limine 请求)
 ├── mk/                 架构描述(工具链、标志位);aarch64/loongarch64 预留
-├── tools/              构建驱动 build.py、gramfix.py、mkimage.sh、limine.conf
+├── tools/              构建驱动 build.py、GNU 用户态 build-gnu.sh、字体生成 genfont.py/gencjkfont.py、mkimage.sh、limine.conf
 ├── build/gen/          预生成的 yacc/lex 产物(检出即可构建,无需 bison/lex)
 ├── build/x86_64/       构建产物(bin/ lib/ kernel.elf vodya.img)
 ├── docs/HANDOFF.md     ★ 交接文档:移植过程中的所有根因分析、踩坑记录、环境说明
@@ -75,6 +78,12 @@ VodyaOS/
 - 研究经典 Unix 的设计思想
 - 参考历史源码的结构与实现方式
 - 在现代工程中重新组织和扩展 Unix 血统的概念
+
+### 许可
+
+- 本项目以 **GPL v3** 发布(见 `LICENSE`)
+- 树内 TUHS/Unix V7 历史代码的来源:TUHS(The Unix Heritage Society)
+- `port/*/kernel/cjkfont.h` 字模数据源自 GNU Unifont(GPL 2+),生成方式见 `tools/gencjkfont.py`
 
 ## 结语
 

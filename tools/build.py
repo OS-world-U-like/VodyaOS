@@ -198,12 +198,15 @@ def build_kernel():
     # Limine boot protocol support (only for arches that provide it)
     limsrc = 'port/%s/kernel/limine.S' % ARCH
     limc = 'port/%s/kernel/limine.c' % ARCH
+    conc = 'port/%s/kernel/console.c' % ARCH
     limobjs = []
     limtasks = []
     if os.path.exists(limsrc):
         limtasks.append((limsrc, out('obj/kernel/limine.o'), [], True))
     if os.path.exists(limc):
         limtasks.append((limc, out('obj/kernel/limine.c.o'), [], True))
+    if os.path.exists(conc):
+        limtasks.append((conc, out('obj/kernel/console.o'), [], True))
     if limtasks:
         run(limtasks)
         limobjs = [t[1] for t in limtasks]

@@ -34,6 +34,17 @@ limine_fb_request:
 limine_fb_response:
 	.quad	0			/* response, filled by loader */
 
+	/* memory map request: { COMMON_MAGIC, 0x67cf3d9d378a806f,
+	 *                        0xe304acdfc50c3c62 }, rev, response */
+	.balign 8
+limine_memmap_request:
+	.quad	0xc7b1dd30df4c8b88, 0x0a82e883a194f07b
+	.quad	0x67cf3d9d378a806f, 0xe304acdfc50c3c62
+	.quad	0			/* revision */
+	.globl	limine_memmap_response
+limine_memmap_response:
+	.quad	0			/* response, filled by loader */
+
 	.globl	limine_requests_end_marker
 limine_requests_end_marker:
 	.quad	0xadc0e0531bb10d03, 0x9572709f31764c62
