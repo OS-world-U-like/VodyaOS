@@ -381,7 +381,7 @@ def build_userland():
     # auto-discovery: every .c file / dir of .c files becomes a program
     for f in sorted(glob.glob('usr/src/cmd/*.c')):
         d = 'usr/src/cmd'
-        groups.append((d, [P(f[:-2], [f], [d])]))
+        groups.append((d, [P(os.path.basename(f)[:-2], [f], [d])]))
     for base in ('usr/src/cmd', 'usr/src/games'):
         for d in sorted(glob.glob(base + '/*/')):
             d = d.rstrip('/')

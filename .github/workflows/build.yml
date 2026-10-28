@@ -1,0 +1,74 @@
+# VodyaOS automatic build.
+#
+# Builds everything for x86_64 (libs + kernel + userland), packs the
+# UEFI boot image (tools/mkimage.sh, Limine boot protocol) and runs a
+# small userland smoke test under qemu-user.  See docs/HANDOFF.md.
+
+name: build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+env:
+  LIMINE_REF: v8.x-binary
+
+jobs:
+  x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain and image tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang lld llvm bison \
+            dosfstools mtools util-linux \
+            qemu-user
+
+      - name: Cache Limine bootloader
+        id: limine-cache
+        uses: actions/cache@v4
+        with:
+          path: limine
+          key: limine-${{ env.LIMINE_REF }}-bin-1
+
+      - name: Fetch Limine (v8.x-binary branch)
+        if: steps.limine-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --branch "$LIMINE_REF" --depth 1 \
+            https://github.com/limine-bootloader/limine.git limine
+          make -C limine
+
+      - name: Build everything (libs + kernel + userland)
+        run: make -j"$(nproc)" all
+
+      - name: Build UEFI boot image
+        run: make image
+
+      - name: Smoke-test userland under qemu-x86_64
+        run: |
+          set -e
+          echo hello | qemu-x86_64 build/x86_64/bin/cat
+          printf 'b\na\n2\nc\n1\n' | qemu-x86_64 build/x86_64/bin/sort | head -5
+          echo 'x=42; echo $x' | qemu-x86_64 build/x86_64/bin/sh
+
+      - name: Upload boot image
+        uses: actions/upload-artifact@v4
+        with:
+          name: vodya-uefi-image
+          path: build/x86_64/vodya.img
+          if-no-files-found: error
+
+      - name: Upload kernel and userland
+        uses: actions/upload-artifact@v4
+        with:
+          name: vodya-x86_64
+          path: |
+            build/x86_64/kernel.elf
+            build/x86_64/bin/
+          if-no-files-found: error
