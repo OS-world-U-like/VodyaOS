@@ -13,3 +13,8 @@ lex.yy.c
 *.o
 *.a
 *.core
+
+# Limine bootloader clone (see docs/HANDOFF.md section 9 for setup)
+/limine/
+# local Claude Code session settings
+/.claude/

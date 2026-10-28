@@ -1,35 +1,50 @@
 /*
  * VodyaOS x86_64 kernel link map.
  *
- * This is a flat higher-half-less image for now.  Once the kernel
- * has a real long-mode entry and page tables this will move to the
- * conventional -2GB kernel virtual address.
+ * Limine boot protocol requirement: the kernel must be linked in the
+ * higher half, with virtual addresses offset from physical by
+ * 0xffffffff80000000 (LIMINE_KERNEL_BASE).  Physical addresses start
+ * at 1 MiB.  Limine enters the kernel at its ELF entry point (the
+ * higher-half virtual address) with paging already enabled and the
+ * kernel mapped there, so _start runs at its linked address directly.
  */
 
 ENTRY(_start)
 
+KERNEL_BASE = 0xffffffff80000000;
+KERNEL_PHYS = 0x00100000;
+
 SECTIONS
 {
-	. = 0x00100000;
+	. = KERNEL_BASE;
 
-	.text : ALIGN(16) {
+	__text_vma = .;
+	.text : AT(__text_vma - KERNEL_BASE + KERNEL_PHYS) ALIGN(16) {
 		*(.text.entry)
 		*(.text .text.*)
 	}
 
-	. = ALIGN(16);
-	.rodata : {
+	. = ALIGN(0x1000);
+	__limine_vma = .;
+	.limine_requests : AT(__limine_vma - KERNEL_BASE + KERNEL_PHYS) {
+		KEEP(*(.limine_requests))
+	}
+
+	. = ALIGN(0x1000);
+	__rodata_vma = .;
+	.rodata : AT(__rodata_vma - KERNEL_BASE + KERNEL_PHYS) {
 		*(.rodata .rodata.*)
 	}
 
-	. = ALIGN(16);
-	.data : {
+	. = ALIGN(0x1000);
+	__data_vma = .;
+	.data : AT(__data_vma - KERNEL_BASE + KERNEL_PHYS) {
 		*(.data .data.*)
 		_edata = .;
 	}
 
 	. = ALIGN(16);
-	.bss : {
+	.bss : AT(__data_vma - KERNEL_BASE + KERNEL_PHYS + SIZEOF(.data)) {
 		*(COMMON)
 		*(.bss .bss.*)
 		*(.sbss .sbss.*)

@@ -11,6 +11,8 @@
 #   kernel    build/<ARCH>/kernel.elf
 #   userland  build/<ARCH>/bin/*
 #   gen       regenerate yacc/lex-derived sources into build/gen/
+#   image     UEFI boot image (GPT + ESP, Limine)
+#   run       boot the image in qemu (OVMF)
 #   clean     remove build/<ARCH>
 #
 # Everything architecture-specific lives in port/<ARCH>/ and mk/arch-<ARCH>.mk;
@@ -22,7 +24,10 @@ _mkfile_self := $(realpath mk/arch-$(ARCH).mk)
 
 DRIVER = python3 tools/build.py --arch $(ARCH)
 
-.PHONY: all libs kernel userland gen clean
+LIMINE_DIR ?= limine
+BUILD_DIR := build/$(ARCH)
+
+.PHONY: all libs kernel userland gen clean image run
 ifeq ($(strip $(ARCH_SUPPORTED)),yes)
 
 all:	libs kernel userland
@@ -38,6 +43,24 @@ userland: libs
 
 gen:
 	ARCH=$(ARCH) EMU=$(EMU) bash tools/gen.sh
+
+# --- bootable image (Limine boot protocol, UEFI only) -----------------------
+# No legacy BIOS support by design.  Prerequisites: sfdisk, mkfs.vfat,
+# mtools; and the limine/ tree cloned from
+# github.com/limine-bootloader/limine (v8.x-binary branch).  `make run`
+# boots the image with OVMF (apt: ovmf).
+
+IMG := $(BUILD_DIR)/vodya.img
+
+image:	kernel
+	bash tools/mkimage.sh $(ARCH) $(BUILD_DIR)/kernel.elf \
+		tools/limine.conf $(LIMINE_DIR) $(IMG)
+
+run:	image
+	qemu-system-x86_64 -M q35 -m 128M \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive file=$(IMG),format=raw,if=virtio \
+		-serial stdio -display none -no-reboot
 
 clean:
 	rm -rf build/$(ARCH)

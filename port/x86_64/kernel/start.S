@@ -1,12 +1,15 @@
 /*
- * x86_64 kernel entry point.
+ * x86_64 kernel entry point (Limine boot protocol).
  *
  * The historical V7 startup code (l.s / mch.s) built the PDP-11
- * MMU and then jumped into main().  This port keeps the same
- * contract: establish a stack, clear the direction flag and call
- * main().  Booting is deliberately out of scope for now; the image
- * is linked as a flat ELF64 kernel so that all of the portable V7
- * code can be compiled and inspected on a modern toolchain.
+ * MMU and then jumped into main().  Limine hands us long mode with
+ * the kernel mapped, so this entry only has to establish a stack
+ * and clear the direction flag.
+ *
+ * Minimal boot: limine_start() reports on the COM1 serial line and
+ * halts.  Calling main() is deferred until the kernel has an IDT,
+ * a clock and page tables (HANDOFF.md section 8.5) - re-enable the
+ * call below at that point.
  */
 
 	.text
@@ -19,7 +22,7 @@ start:
 	cld
 	xorl	%ebp, %ebp
 	leaq	kernel_stack_top(%rip), %rsp
-	call	main
+	call	limine_start
 1:
 	hlt
 	jmp	1b

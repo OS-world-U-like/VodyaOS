@@ -11,7 +11,9 @@ EMU     ?= qemu-x86_64
 
 # Extra flags
 ARCHCFLAGS    :=
-KERNEL_CFLAGS := -mno-red-zone
+# -mcmodel=kernel: the kernel is linked in the higher half (Limine boot
+# protocol), so 32-bit absolute references to kernel symbols cannot be used.
+KERNEL_CFLAGS := -mno-red-zone -mcmodel=kernel
 # Static userland binaries must live above 0x400000 to be runnable
 # (e.g. under qemu-user or a future x86_64 kernel).
 IMAGE_BASE    := 0x400000
