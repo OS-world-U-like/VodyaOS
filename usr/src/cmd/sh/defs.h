@@ -281,7 +281,10 @@ MSG		badexec;
 MSG		notfound;
 MSG		badfile;
 
-address	end[];
+/* V7 relied on the old loader merging this with the linker-provided `end'
+ * (end of bss); as a plain tentative definition it becomes an ordinary bss
+ * variable and the alloc arena then overlaps globals.  Use the linker symbol. */
+extern char	end[];
 
 #include	"ctype.h"
 

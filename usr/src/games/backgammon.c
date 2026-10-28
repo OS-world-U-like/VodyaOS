@@ -199,7 +199,7 @@ int *player,startrow,endrow;
 	int sum;
 	sum=0;
 	while(startrow<=endrow)
-	sum=+player[startrow++];
+	sum+=player[startrow++];
 	return(sum);
 }
 /*
@@ -450,7 +450,7 @@ int *player,*playee,k,*prob;
 	}
 
 	for(n=1;n<=4;n++)
-	    *prob=+ n*getprob(newtry,newother,6*n-5,6*n);
+	    *prob+= n*getprob(newtry,newother,6*n-5,6*n);
 	return(sum);
 }
 instructions()
@@ -570,8 +570,8 @@ srand(){
 	}
 
 rand(){
-	rrno =* 0106273;
-	rrno =+ 020202;
+	rrno *= 0106273;
+	rrno += 020202;
 	return( rrno & 077777 );
 	}
 

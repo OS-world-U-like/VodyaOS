@@ -156,20 +156,20 @@ setup:
 	for(i=0; i<NPIT; ) {
 		p = &room[rnum(NROOM)];
 		if((p->flag&PIT) == 0) {
-			p->flag =| PIT;
+			p->flag |= PIT;
 			i++;
 		}
 	}
 	for(i=0; i<NBAT; ) {
 		p = &room[rnum(NROOM)];
 		if((p->flag&(PIT|BAT)) == 0) {
-			p->flag =| BAT;
+			p->flag |= BAT;
 			i++;
 		}
 	}
 	i = rnum(NROOM);
 	wloc = i;
-	room[i].flag =| WUMP;
+	room[i].flag |= WUMP;
 	for(;;) {
 		i = rnum(NROOM);
 		if((room[i].flag&(PIT|BAT|WUMP)) == 0) {
@@ -267,11 +267,11 @@ again:
 
 mwump:
 	p = &room[wloc];
-	p->flag =& ~WUMP;
+	p->flag &= ~WUMP;
 	i = rnum(NTUNN+1);
 	if(i != NTUNN)
 		wloc = p->tunn[i];
-	room[wloc].flag =| WUMP;
+	room[wloc].flag |= WUMP;
 	goto loop;
 
 done:

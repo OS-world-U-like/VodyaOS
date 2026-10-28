@@ -35,7 +35,10 @@ main(c, v)
 
 	/* initialise storage allocation */
 	stdsigs();
-	setbrk(BRKINCR);
+	/* V7 ran in a PDP-11 data segment where the space between the break
+	 * and the stack was always mapped; several push paths never brk.
+	 * Pre-map a generous slack so those paths behave as on V7. */
+	setbrk(BRKINCR + BRKSLACK);
 	addblok((POS)0);
 
 	/* set names from userenv */

@@ -33,7 +33,9 @@ syslook(w,syswds)
 	REG STRING	s;
 	REG SYSPTR	syscan;
 
-	syscan=syswds; first = *w;
+	syscan=syswds;
+	IF w==0 THEN return(0) FI	/* V7 read *0 harmlessly; Linux does not */
+	first = *w;
 
 	WHILE s=syscan->sysnam
 	DO  IF first == *s
@@ -250,6 +252,12 @@ VOID	printnam(n)
 {
 	REG STRING	p;
 
+	/* V7 left the space above the break mapped on the PDP-11, so only
+	 * locstak() kept books; on Linux the area is unmapped and must be
+	 * grown before pushing strings that bypass locstak(). */
+	IF brkend-staktop < BRKINCR
+	THEN	setbrk(brkincr);
+	FI
 	p=movstr(n->namid,staktop);
 	p=movstr("=",p);
 	p=movstr(n->namval,p);

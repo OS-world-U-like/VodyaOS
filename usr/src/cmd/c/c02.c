@@ -658,7 +658,7 @@ funchead()
 			cs->htype = DOUBLE;
 		cs->hoffset = pl;
 		if ((cs->htype&XTYPE) == ARRAY) {
-			cs->htype =- (ARRAY-PTR);	/* set ptr */
+			cs->htype -= (ARRAY-PTR);	/* set ptr */
 			cs->subsp++;		/* pop dims */
 		}
 		pl += rlength(cs);

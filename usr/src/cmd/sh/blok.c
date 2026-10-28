@@ -64,6 +64,10 @@ VOID	addblok(reqd)
 		bloktop=BLK(rndstak);
 	FI
 	reqd += brkincr; reqd &= ~(brkincr-1);
+	/* V7 ran on a kernel that left room above `end' without an explicit
+	 * brk; on Linux (and our libc) the area past the break is unmapped,
+	 * so grow the break to cover the new arena tail before linking it in. */
+	setbrk(reqd);
 	blokp=bloktop;
 	bloktop=bloktop->word=BLK(Rcheat(bloktop)+reqd);
 	bloktop->word=BLK(ADR(end)+1);

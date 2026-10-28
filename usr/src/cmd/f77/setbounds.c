@@ -1,3 +1,4 @@
+#include "defs"
 /*
  * setbounds(name, ndim, dims)
  *

@@ -7,7 +7,7 @@
 extern int	yylval;
 extern int	mustfld;
 
-int	lineno	1;
+int	lineno	= 1;
 #ifdef	DEBUG
 #	define	RETURN(x)	{if (dbg) ptoken(x); return(x); }
 #else

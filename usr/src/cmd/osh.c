@@ -226,7 +226,7 @@ int n;
 	register *t;
 
 	t = treep;
-	treep =+ n;
+	treep += n;
 	if (treep>treeend) {
 		prs("Command line overflow\n");
 		error++;
@@ -245,17 +245,17 @@ getc()
 		return(c);
 	}
 	if(argp > eargp) {
-		argp =- 10;
+		argp -= 10;
 		while((c=getc()) != '\n');
-		argp =+ 10;
+		argp += 10;
 		err("Too many args",255);
 		gflg++;
 		return(c);
 	}
 	if(linep > elinep) {
-		linep =- 10;
+		linep -= 10;
 		while((c=getc()) != '\n');
-		linep =+ 10;
+		linep += 10;
 		err("Too many characters",255);
 		gflg++;
 		return(c);
