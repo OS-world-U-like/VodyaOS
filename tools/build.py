@@ -199,8 +199,20 @@ def build_kernel():
     limsrc = 'port/%s/kernel/limine.S' % ARCH
     limc = 'port/%s/kernel/limine.c' % ARCH
     conc = 'port/%s/kernel/console.c' % ARCH
+    # boot-time kernel infrastructure (intr/pit/keyboard), per-arch optional
+    extra_ks = ['port/%s/kernel/intr.S' % ARCH]
+    extra_kc = ['port/%s/kernel/intr.c' % ARCH,
+                'port/%s/kernel/pit.c' % ARCH,
+                'port/%s/kernel/keyboard.c' % ARCH,
+                'port/%s/kernel/pmm.c' % ARCH]
     limobjs = []
     limtasks = []
+    for s in [x for x in extra_ks + extra_kc if os.path.exists(x)]:
+        stem = os.path.basename(s).rsplit('.', 1)[0]
+        # .S and .c can share a stem (intr.S / intr.c): keep the suffix
+        # in the object name for C files to avoid the collision
+        oname = stem + '.o' if s.endswith('.S') else stem + '.c.o'
+        limtasks.append((s, out('obj/kernel/%s' % oname), [], True))
     if os.path.exists(limsrc):
         limtasks.append((limsrc, out('obj/kernel/limine.o'), [], True))
     if os.path.exists(limc):

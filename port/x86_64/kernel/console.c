@@ -255,6 +255,14 @@ fb_putcp(uint32_t cp)
 		fb.cx = 0;
 		return;
 	}
+	if (cp == '\b') {
+		if (fb.cx > 0) {
+			fb.cx--;
+			fill_rect(fb.cx * FONT_WIDTH, fb.cy * FONT_HEIGHT,
+			    FONT_WIDTH, FONT_HEIGHT, 0);
+		}
+		return;
+	}
 	if (cp == '\t') {
 		for (i = 0; i < 4; i++)
 			fb_putcp(' ');

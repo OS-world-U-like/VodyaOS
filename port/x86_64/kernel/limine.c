@@ -60,6 +60,12 @@ struct limine_memmap_response {
 /* response slots inside limine.S's requests */
 extern void *limine_fb_response;
 extern void *limine_memmap_response;
+extern void *limine_hhdm_response;
+extern uint64_t limine_base_revision[3];
+
+/* filled in limine_start, consumed by pmm.c et al: every physical
+ * address maps at hhdm_offset + paddr */
+uint64_t hhdm_offset;
 
 /* console.c */
 void console_init(struct limine_fb *fb);
@@ -68,6 +74,18 @@ void console_write(const char *s, unsigned long n);
 void console_serial_write(const char *s, unsigned long n);
 void console_setfg(unsigned char r, unsigned char g, unsigned char b);
 int  console_fb_ok(void);
+
+/* intr.c / pit.c / keyboard.c */
+void intr_init(void);
+void sti(void);
+void cli(void);
+void pit_init(int hz);
+void kbd_init(void);
+int  kbd_getchar(void);
+void pmm_init(void);
+uint64_t pmm_total(void);
+uint64_t pmm_free(void);
+extern volatile uint64_t jiffies;
 
 #define MEMTYPE_USABLE			0
 #define MEMTYPE_RESERVED		1
@@ -97,7 +115,7 @@ memtype_name(uint64_t t)
 /* serial-only shortcut (ANSI escapes must not reach the fb renderer) */
 #define SW(s)	console_serial_write(s, sizeof(s) - 1)
 
-static void
+void
 putdec(uint64_t v)
 {
 	char buf[20];
@@ -115,7 +133,7 @@ putdec(uint64_t v)
 		console_write(&buf[i], 1);
 }
 
-static void
+void
 puthex(uint64_t v)
 {
 	static const char digits[] = "0123456789abcdef";
@@ -221,6 +239,22 @@ limine_start(void)
 	uint64_t usable = 0;
 	uint64_t i, nusable = 0;
 
+	/* HHDM window: rev 1 responses carry the offset; fall back to
+	 * the rev 0 fixed base if the loader granted revision 0 */
+	{
+		struct {
+			uint64_t revision;
+			uint64_t offset;
+		} *hh = limine_hhdm_response;
+
+		if (hh != 0)
+			hhdm_offset = hh->offset;
+		else if (limine_base_revision[1] == 0)
+			hhdm_offset = 0xffffffff80000000ul;
+		else
+			hhdm_offset = 0xffff800000000000ul;
+	}
+
 	console_init(fb != 0 && fb->framebuffer_count > 0
 	    ? fb->framebuffers[0] : 0);
 
@@ -293,13 +327,80 @@ limine_start(void)
 
 	ok("Reached target Early Boot.");
 
+	/* ---- interrupt + device infrastructure (HANDOFF.md 8.5) ---- */
+	intr_init();
+	ok("Initialized IDT and exception handlers.");
+
+	pit_init(100);				/* 100 Hz heartbeat */
+	ok("Initialized PIT timer (100 Hz).");
+
+	sti();					/* interrupts live from here */
+
+	kbd_init();
+	ok("Initialized PS/2 keyboard driver.");
+
+	pmm_init();
+	ok_prefix();
+	console_puts("Initialized physical memory allocator: ");
+	putdec(pmm_free());
+	console_puts(" free / ");
+	putdec(pmm_total());
+	console_puts(" 4KiB pages");
+	line_end();
 	detail_prefix();
-	console_puts("V7 main() pending: IDT, clock, page tables "
+	console_puts("  base rev granted: ");
+	puthex(limine_base_revision[1]);
+	console_puts(", hhdm offset: ");
+	puthex(hhdm_offset);
+	console_puts("\r\n");
+	detail_end();
+
+	/* ---- interactive input demo: type, see it echoed ---- */
+	{
+		char line[160];
+		int n = 0;
+
+		console_puts("\r\nKeyboard input is live - type a line, "
+		    "Enter to confirm, 'halt' quits.\r\n");
+		for (;;) {
+			int c;
+
+			console_puts("vodya> ");
+			n = 0;
+			for (;;) {
+				c = kbd_getchar();
+				if (c < 0)
+					continue;
+				if (c == '\n')
+					break;
+				if (c == '\b') {
+					if (n > 0)
+						n--;
+					continue;
+				}
+				if (n < (int)sizeof(line) - 1)
+					line[n++] = (char)c;
+			}
+			line[n] = 0;
+			if (line[0] == 0)
+				continue;
+			if (line[0] == 'h' && line[1] == 'a' &&
+			    line[2] == 'l' && line[3] == 't' && line[4] == 0)
+				break;
+			console_puts("you typed: ");
+			console_puts(line);
+			console_puts("\r\n");
+		}
+	}
+
+	detail_prefix();
+	console_puts("V7 main() pending: userland exec, btrfs rootfs "
 	    "(HANDOFF.md 8.5)\r\n");
 	detail_end();
 
 	/* V7 main() comes back here once paging/IDT/clock exist (HANDOFF 8.5).
 	 * main(); */
+	console_puts("halted.\r\n");
 	for (;;)
-		__asm__ volatile("hlt");
+		__asm__ volatile("cli; hlt");
 }

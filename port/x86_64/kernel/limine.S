@@ -16,12 +16,23 @@ limine_requests_start_marker:
 	.quad	0xf6b8f4b39de7d1ae, 0xfab91a6940fcb9cf
 	.quad	0x785c6ed015d3e316, 0x181e920a7852b9d9
 
-	/* base revision 0 */
+	/* base revision 1 */
 	.globl	limine_base_revision
 limine_base_revision:
 	.quad	0xf9562b2d5c95a6c8	/* LIMINE_BASE_REVISION magic */
 	.quad	0x6a7b384944536bdc	/* overwritten with loaded revision */
-	.quad	0			/* requested revision */
+	.quad	1			/* requested revision */
+
+	/* HHDM request: { COMMON_MAGIC, 0x48dcf1cb8ad2b852,
+	 *                 0x63984e959a98244b } */
+	.balign 8
+limine_hhdm_request:
+	.quad	0xc7b1dd30df4c8b88, 0x0a82e883a194f07b
+	.quad	0x48dcf1cb8ad2b852, 0x63984e959a98244b
+	.quad	0			/* revision */
+	.globl	limine_hhdm_response
+limine_hhdm_response:
+	.quad	0			/* response, filled by loader */
 
 	/* framebuffer request: { COMMON_MAGIC, 0x9d5827dcd881dd75,
 	 *                        0xa3148604f6fab11b }, rev, response */
