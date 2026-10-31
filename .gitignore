@@ -10,6 +10,11 @@
 /build/gnu/
 /build/gnu-src/
 
+# busybox / dinit builds (tools/build-{busybox,dinit}.sh) and their sources
+/build/busybox/
+/build/dinit/
+/build/src/
+
 # scratch output from lex/awk runs
 lex.yy.c
 

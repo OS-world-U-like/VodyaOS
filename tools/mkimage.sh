@@ -148,17 +148,83 @@ if [ -d "$ROOT/usr" ]; then
 fi
 
 # ------------------------------------------------------------- data (btrfs)
-# Format and seed the btrfs data partition.  Needs loop devices + mount
-# privileges (fine on a dev box); on CI or restricted containers this is
-# skipped and the partition is left for later formatting.  The VodyaOS
-# kernel will speak btrfs itself one day -- until then this partition is
-# the convenient host-mountable staging area, seeded with a V7-style
-# /usr/src layout.
+# Format and seed the btrfs rootfs on partition 2.  This is what the
+# kernel mounts at boot (btrfs first, FAT32 ESP as fallback), so it
+# carries the real rootfs layout:
+#
+#   /gnu/bin/   bash + coreutils (hardlinks) + grep
+#   /bin/       V7 userland + busybox (applet hardlinks)
+#   /sbin/      dinit (init system, future PID 1)
+#   /etc/dinit.d/  dinit service tree (boot -> getty -> bash)
+#   /usr/src/   full source tree
+#
+# Needs root (loop device + mount); skipped gracefully otherwise.  The
+# FAT side keeps a reduced copy of everything as bootstrap fallback.
 if command -v mkfs.btrfs >/dev/null 2>&1 && LOOP=$(losetup --find --show --partscan "$OUT" 2>/dev/null); then
-	if mkfs.btrfs -L VODYA-DATA -f "${LOOP}p2" >/dev/null 2>&1 \
+	SEEDED=""
+	if mkfs.btrfs -L VODYA -f "${LOOP}p2" >/dev/null 2>&1 \
 	   && MNT=$(mktemp -d) \
 	   && mount "${LOOP}p2" "$MNT" 2>/dev/null; then
-		mkdir -p "$MNT/home" "$MNT/etc" "$MNT/tmp"
+		# base layout
+		mkdir -p "$MNT/bin" "$MNT/sbin" "$MNT/gnu/bin" "$MNT/etc/dinit.d" \
+		         "$MNT/tmp" "$MNT/home" "$MNT/dev" "$MNT/proc" \
+		         "$MNT/var/log" "$MNT/mnt"
+
+		# GNU userland: real files copied, coreutils command
+		# hardlinks recreated (symlinks would need symlink support
+		# in the kernel's read-only btrfs driver)
+		if [ -d "$ROOT/build/gnu-src/stage/cu/bin" ]; then
+			# the stage tree holds host-side symlinks; a host
+			# hardlink would be cross-device.  Copy the binary
+			# once, then re-create every applet name as a
+			# hardlink *inside* the btrfs filesystem.
+			cp -L "$ROOT/build/gnu-src/stage/cu/bin/coreutils" \
+			   "$MNT/gnu/bin/coreutils" 2>/dev/null || true
+			for f in "$ROOT/build/gnu-src/stage/cu/bin/"*; do
+				b=$(basename "$f")
+				[ "$b" = coreutils ] && continue
+				ln "$MNT/gnu/bin/coreutils" "$MNT/gnu/bin/$b" \
+				   2>/dev/null || true
+			done
+			echo "installed coreutils (single binary + hardlinks) to btrfs /gnu/bin"
+		fi
+		for f in bash grep; do
+			[ -f "$ROOT/build/gnu-src/stage/$f/bin/$f" ] \
+				&& cp "$ROOT/build/gnu-src/stage/$f/bin/$f" "$MNT/gnu/bin/"
+		done
+
+		# V7 userland
+		BIN_DIR="$(dirname "$KERNEL")/bin"
+		if [ -d "$BIN_DIR" ]; then
+			cp "$BIN_DIR"/* "$MNT/bin/" 2>/dev/null || true
+			echo "installed $(ls "$BIN_DIR" | wc -l) V7 tools to btrfs /bin"
+		fi
+
+		# busybox + applet hardlinks
+		if [ -x "$ROOT/build/busybox/bin/busybox" ]; then
+			cp "$ROOT/build/busybox/bin/busybox" "$MNT/bin/busybox"
+			"$ROOT/build/busybox/bin/busybox" --list 2>/dev/null |
+			while read -r app; do
+				[ "$app" = busybox ] && continue
+				ln "$MNT/bin/busybox" "$MNT/bin/$app" 2>/dev/null || true
+			done
+			echo "installed busybox + applet hardlinks to btrfs /bin"
+		fi
+
+		# dinit (init system) + control tool
+		if [ -x "$ROOT/build/dinit/sbin/dinit" ]; then
+			cp "$ROOT/build/dinit/sbin/dinit" "$MNT/sbin/dinit"
+			cp "$ROOT/build/dinit/bin/dinitctl" "$MNT/bin/dinitctl" 2>/dev/null || true
+			echo "installed dinit to btrfs /sbin/dinit"
+		fi
+
+		# dinit service tree + base configs
+		if [ -d "$ROOT/port/x86_64/rootfs" ]; then
+			cp -a "$ROOT/port/x86_64/rootfs/." "$MNT/"
+			echo "installed rootfs configs (dinit services) to btrfs /etc"
+		fi
+
+		# source tree (same set the ESP carries)
 		if [ -d "$ROOT/usr" ]; then
 			mkdir -p "$MNT/usr/src"
 			cp -a "$ROOT/usr/src" "$ROOT/usr/include" "$ROOT/usr/sys" \
@@ -168,11 +234,15 @@ if command -v mkfs.btrfs >/dev/null 2>&1 && LOOP=$(losetup --find --show --parts
 			cp "$ROOT/Makefile" "$ROOT/LICENSE" "$ROOT/README.md" \
 			   "$ROOT/README.V7.md" "$MNT/usr/src/" 2>/dev/null || true
 		fi
+
+		sync
 		umount "$MNT" && rmdir "$MNT"
-		echo "seeded btrfs data partition (${LOOP}p2 detached)"
-	else
-		echo "note: could not mount btrfs partition, left unseeded (boot image unaffected)"
+		SEEDED=1
+		echo "seeded btrfs rootfs (${LOOP}p2 detached)"
+	fi
+	if [ -z "$SEEDED" ]; then
 		umount "${LOOP}p2" 2>/dev/null || true
+		echo "note: could not seed btrfs partition, left unformatted (boot image unaffected)"
 	fi
 	losetup -d "$LOOP" 2>/dev/null || true
 else

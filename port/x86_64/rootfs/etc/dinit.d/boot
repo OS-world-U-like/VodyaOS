@@ -1,0 +1,3 @@
+# /etc/dinit.d/boot -- the boot target dinit brings up as PID 1.
+type = internal
+depends-on = getty

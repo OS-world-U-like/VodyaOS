@@ -226,7 +226,9 @@ idt_set(int n, char *handler)
 	uint64_t off = (uint64_t)handler;
 
 	idt[n].off_lo = off & 0xffff;
-	idt[n].sel = 0x28;	/* Limine's 64-bit kernel code selector */
+	idt[n].sel = 0x08;	/* our 64-bit kernel code selector (cpu.c
+				 * GDT; Limine's 0x28 becomes user code
+				 * once our GDT is loaded) */
 	idt[n].ist = 0;
 	idt[n].flags = 0x8e;
 	idt[n].off_mid = (off >> 16) & 0xffff;
@@ -329,7 +331,7 @@ pic_init(void)
 	pic_remask();			/* then apply irq_mask */
 }
 
-static void
+void
 pic_eoi(int irq)
 {
 	if (irq >= 8)
@@ -357,6 +359,13 @@ intr_dispatch(uint64_t *f)
 	unsigned vec = (unsigned)f[TF_VECTOR / 8];
 
 	if (vec < 32) {
+		/* ring-3 faults kill the process, not the machine */
+		if ((f[TF_CS / 8] & 3) == 3) {
+			extern void proc_fault_exit(int sig);
+
+			proc_fault_exit((int)vec);
+			return;			/* not reached */
+		}
 		panic_dump(f);
 		return;				/* not reached */
 	}

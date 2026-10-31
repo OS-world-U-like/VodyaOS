@@ -1,0 +1,7 @@
+# /etc/dinit.d/getty -- the console shell (bash on /dev/console).
+# The kernel hands the console to PID 1 as fds 0/1/2; dinit passes it
+# on to this service.
+type = process
+command = /gnu/bin/bash
+options = starts-on-console
+restart = true

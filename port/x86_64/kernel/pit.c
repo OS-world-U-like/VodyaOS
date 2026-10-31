@@ -22,13 +22,26 @@ outb(uint16_t port, uint8_t val)
 }
 
 void irq_register(int irq, void (*fn)(uint64_t *frame));
+/* intr.c */
+void pic_eoi(int irq);
+/* syscall.c */
+void schedule(void);
+/* keyboard.c */
+void kbd_poll(void);
 
 volatile uint64_t jiffies;
 
 static void
 pit_tick(uint64_t *frame)
 {
+	(void)frame;
 	jiffies++;
+	kbd_poll();		/* merge serial input into the keyboard ring */
+	/* EOI *before* scheduling: schedule() may switch stacks and
+	 * never return through intr_dispatch's trailing EOI, which
+	 * would leave IRQ0 masked at the PIC forever. */
+	pic_eoi(0);
+	schedule();
 }
 
 void

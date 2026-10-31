@@ -88,12 +88,30 @@ region_push(uint64_t base, uint64_t len)
 	uint64_t end = (base + len) & ~(PAGE_SIZE - 1);
 	uint64_t i;
 
-	for (i = start; i + PAGE_SIZE <= end; i += PAGE_SIZE) {
-		*(uint64_t *)phys2virt(i) = free_head;
-		free_head = i;
+	/*
+	 * Push high-to-low so alloc_phys() pops ascending within the
+	 * region: alloc_run() (kernel stacks) relies on consecutive
+	 * pops being physically contiguous.  Regions themselves are
+	 * walked in ascending memmap order, so the highest region is
+	 * linked last and consumed first -- allocations still come
+	 * from the high end, away from the kernel.
+	 */
+	for (i = end; i >= start + PAGE_SIZE; i -= PAGE_SIZE) {
+		*(uint64_t *)phys2virt(i - PAGE_SIZE) = free_head;
+		free_head = i - PAGE_SIZE;
 		free_count++;
 	}
 }
+
+uint64_t alloc_run(uint64_t npages, uint64_t *got);
+
+#define STACK_RUN_PAGES		16
+#define STACK_POOL_BYTES	(16ul * 1024 * 1024)
+
+static uint64_t stack_pool_base, stack_pool_next, stack_pool_end;
+static uint64_t stack_freelist;
+
+static void pmm_stack_reserve(struct limine_memmap_response *mm);
 
 void
 pmm_init(void)
@@ -128,6 +146,8 @@ pmm_init(void)
 			continue;
 		total_count += len / PAGE_SIZE;
 	}
+	pmm_stack_reserve(mm);
+
 	for (i = 0; i < mm->entry_count; i++) {
 		struct limine_memmap_entry *e = mm->entries[i];
 		uint64_t base = e->base > LOW_WATER ? e->base : LOW_WATER;
@@ -146,6 +166,16 @@ pmm_init(void)
 			continue;
 		if (base + len > 0x100000000ul)
 			continue;
+		if (stack_pool_end && base < stack_pool_end &&
+		    base + len > stack_pool_base) {
+			/* the pool lives at this region's low end */
+			uint64_t nb = stack_pool_end > base ?
+			    stack_pool_end : base;
+
+			if (base + len > nb)
+				region_push(nb, base + len - nb);
+			continue;
+		}
 		region_push(base, len);
 	}
 }
@@ -173,6 +203,79 @@ alloc_phys(void)
 	free_head = *(uint64_t *)phys2virt(p);
 	free_count--;
 	return p;
+}
+
+/*
+ * Kernel stacks need KSTACK_PAGES physically contiguous pages, but the
+ * general free list fragments as soon as processes exit (freed pages
+ * are pushed onto the head in arbitrary order), so alloc_run() starts
+ * failing after the first fork/exec round-trip.  Reserve one large
+ * contiguous chunk at boot -- while the list is still pristine -- and
+ * carve fixed-size stack slots out of it.
+ */
+
+/*
+ * Reserve the pool while the memmap is still in hand: the lowest
+ * STACK_POOL_BYTES of the largest usable region are simply not linked
+ * into the free list, so they can never be handed out as single pages
+ * and always stay physically contiguous.
+ */
+static void
+pmm_stack_reserve(struct limine_memmap_response *mm)
+{
+	uint64_t i, best_len = 0, best_base = 0;
+
+	stack_pool_base = stack_pool_next = stack_pool_end = 0;
+	for (i = 0; i < mm->entry_count; i++) {
+		struct limine_memmap_entry *e = mm->entries[i];
+		uint64_t base = e->base > LOW_WATER ? e->base : LOW_WATER;
+		uint64_t len = e->length - (base - e->base);
+
+		if (e->base + e->length <= LOW_WATER)
+			continue;
+		if (e->type != MEMTYPE_USABLE)
+			continue;
+		if (base + len > 0x100000000ul)
+			continue;
+		if (len > best_len) {
+			best_len = len;
+			best_base = base;
+		}
+	}
+	if (best_len < 2 * STACK_POOL_BYTES)
+		return;
+	stack_pool_base = (best_base + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	stack_pool_next = stack_pool_base;
+	stack_pool_end = stack_pool_base + STACK_POOL_BYTES;
+	if (stack_pool_end > best_base + best_len)
+		stack_pool_end = (best_base + best_len) & ~(PAGE_SIZE - 1);
+}
+
+uint64_t
+pmm_stack_alloc(void)
+{
+	uint64_t base;
+
+	if (stack_freelist) {
+		base = stack_freelist;
+		stack_freelist = *(uint64_t *)phys2virt(base);
+		return base;
+	}
+	if (stack_pool_next == 0 ||
+	    stack_pool_next + STACK_RUN_PAGES * PAGE_SIZE > stack_pool_end)
+		return 0;
+	base = stack_pool_next;
+	stack_pool_next += STACK_RUN_PAGES * PAGE_SIZE;
+	return base;
+}
+
+void
+pmm_stack_free(uint64_t base)
+{
+	if (base == 0)
+		return;
+	*(uint64_t *)phys2virt(base) = stack_freelist;
+	stack_freelist = base;
 }
 
 void

@@ -28,7 +28,8 @@ ARCHCONF = {
         ld=['ld.lld', '-m', 'elf_x86_64'],
         ar='llvm-ar',
         archcflags=[],
-        kernel_cflags=['-mno-red-zone', '-mcmodel=kernel'],
+        kernel_cflags=['-mno-red-zone', '-mcmodel=kernel',
+                       '-mno-sse', '-mno-mmx', '-mno-sse2'],
         image_base='0x400000',
         kernel_ld='port/x86_64/kernel/kernel.ld',
         kernel_extra=['start.o', 'context.o'],   # from port/x86_64/kernel
@@ -199,19 +200,28 @@ def build_kernel():
     limsrc = 'port/%s/kernel/limine.S' % ARCH
     limc = 'port/%s/kernel/limine.c' % ARCH
     conc = 'port/%s/kernel/console.c' % ARCH
-    # boot-time kernel infrastructure (intr/pit/keyboard), per-arch optional
-    extra_ks = ['port/%s/kernel/intr.S' % ARCH]
+    # boot-time kernel infrastructure, per-arch optional
+    extra_ks = ['port/%s/kernel/intr.S' % ARCH,
+                'port/%s/kernel/sys.S' % ARCH]
     extra_kc = ['port/%s/kernel/intr.c' % ARCH,
                 'port/%s/kernel/pit.c' % ARCH,
                 'port/%s/kernel/keyboard.c' % ARCH,
-                'port/%s/kernel/pmm.c' % ARCH]
+                'port/%s/kernel/pmm.c' % ARCH,
+                'port/%s/kernel/cpu.c' % ARCH,
+                'port/%s/kernel/vmm.c' % ARCH,
+                'port/%s/kernel/ata.c' % ARCH,
+                'port/%s/kernel/fat32.c' % ARCH,
+                'port/%s/kernel/btrfs.c' % ARCH,
+                'port/%s/kernel/exec.c' % ARCH,
+                'port/%s/kernel/syscall.c' % ARCH]
     limobjs = []
     limtasks = []
     for s in [x for x in extra_ks + extra_kc if os.path.exists(x)]:
         stem = os.path.basename(s).rsplit('.', 1)[0]
-        # .S and .c can share a stem (intr.S / intr.c): keep the suffix
-        # in the object name for C files to avoid the collision
-        oname = stem + '.o' if s.endswith('.S') else stem + '.c.o'
+        # keep the suffix in the object name: .S and .c can share a stem
+        # (intr.S / intr.c), and port sys.S must not clobber the V7
+        # usr/sys/dev/sys.c object
+        oname = stem + '.S.o' if s.endswith('.S') else stem + '.c.o'
         limtasks.append((s, out('obj/kernel/%s' % oname), [], True))
     if os.path.exists(limsrc):
         limtasks.append((limsrc, out('obj/kernel/limine.o'), [], True))

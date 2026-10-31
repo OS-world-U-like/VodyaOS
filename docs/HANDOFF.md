@@ -404,3 +404,165 @@ console.c 在 Limine framebuffer 上自绘文本，串口照常镜像，两边�
   `LICENSE.V7`、`ALU-USA-statement.pdf` 已按用户要求删除。注意：TUHS 的 V7
   源码在历史上的 Caldera 许可下允许再分发，但其条款要求保留版权声明——
   再发布时在 README 级别注明来源（现已如此）是最低限度的对齐做法。
+
+## 11. Phase 2：syscall 层 + 用户进程 + btrfs rootfs（2026-10-30）
+
+目标形态：内核原生读 btrfs 根分区（p2），execve ELF 进 ring3，首个用户进程
+`/gnu/bin/bash` 作为 PID 1；dinit/busybox 已入 rootfs（dinit 接管 PID 1 是
+下一个里程碑）。
+
+### 11.1 新增内核文件
+
+```
+port/x86_64/kernel/cpu.c     GDT/TSS/SYSENTER 家 MSR：STAR=(0x18<<48)|(0x08<<32)
+                             （sysret CS=0x2b/SS=0x23）、SFMASK、EFER.SCE、
+                             FS/GS base、ltr 经 %ax
+port/x86_64/kernel/vmm.c     用户页表：cr3 克隆内核半区；fork 全量拷贝；
+                             PTE_USER_RW/RX/RO。中间层页表必须带 PTE_U
+port/x86_64/kernel/exec.c    ELF64 加载 + execve_proc（直接 iret 进 ring3）+
+                             proc_start（PID 1 = /gnu/bin/bash）
+port/x86_64/kernel/sys.S     syscall/sysret 快路径（EFER.SCE）；构建与中断
+                             同一 0xb0 uniform 帧；syscall_ret 供 fork 子进程
+                             首次调度 ret 进入
+port/x86_64/kernel/syscall.c Linux x86_64 ABI 层：read/write/open/fstat/
+                             brk/fork/execve/... + 调度器（schedule/pick_next/
+                             proc_wake_all）+ fd 表
+port/x86_64/kernel/ata.c     ATA PIO 主通道 28-bit LBA 轮询（读盘用）
+port/x86_64/kernel/fat32.c   FAT32 只读（ESP 兜底引导）
+port/x86_64/kernel/btrfs.c   btrfs 只读：superblock/chunk tree/fs tree/
+                             crc32c 目录名 hash；无压缩/校验/符号链接/多设备
+port/x86_64/kernel/proc.h    struct proc / 进程表 / 状态机
+```
+
+### 11.2 中断帧归一化 + GDT 切换（本轮最硬的坑，值得整段记录）
+
+**QEMU TCG 的中断压栈铁律（对着 QEMU 10.2.1 `seg_helper.c`
+`do_interrupt64` 源码逐行核实 + `-d int` 实测）**：64 位模式下 CPU 先把
+RSP **向下对齐到 16 字节**，然后**无论同特权与否一律压 5 个四字**
+（内存升序：rip, cs, rflags, old_rsp, old_ss）。同 ring 也不只压 3 个！
+于是 CPL0 内核入口的栈是（E 为入口 rsp）：
+
+```
+vec@E, err@E+8, rip@E+0x10, cs@E+0x18, rflags@E+0x20,
+被中断RSP X@E+0x28, old_ss@E+0x30     (E = align_down(X) - 0x38)
+```
+
+**被中断的 RSP 永远躺在内存 [E+0x28] 里，不许合成**。intr.S 的 shuffle
+因此从 `leaq 0x48(%rsp)`（合成）改为 `movq 0x48(%rsp)`（读内存），old_ss
+同理读 `[E+0x30]`。注意：真硬件同 ring 只压 3 个四字，若离开 QEMU 移植
+到实机需加帧形检测（intr.S 头注释已记）。
+
+归一化后的 uniform 帧不变：
+
+```
+[ss][rsp][rflags][cs][rip][err][vector][r15..rax]  (0xb0, 双 ring 通用)
+```
+
+尾声统一为 `pop ×15 + addq $0x10 + iretq`，无分支。syscall.S 构建同一布局，
+fork 子进程栈、intr.c trapframe、panic dump 全部共用。
+
+修完帧形后又连环踩了两个**GDT/TSS 相关**的坑（症状全是"gdt 之后的第一个
+tick 必炸"）：
+
+1. **TSS 描述符编码错**：gdt_install 用 `lo = base低32 | 0x89<<8 |
+   limit<<16` 拼 TSS 描述符——type(40-47bit)/limit(0-19bit) 与
+   base(16-39bit) 全部互相重叠。正确拼法见 cpu.c：limit 低16 |
+   base低24<<16 | 0x89<<40 | limit高4<<48 | base[24:32]<<56，gdt[7] =
+   base>>32。
+2. **IDT 门选择子指错 GDT**：IDT 门原本用 `sel=0x28`（Limine 的内核
+   CS）。cpu_init 换上我们自己的 GDT 后，0x28 变成 **user code
+   (DPL=3)**——QEMU 的 `do_interrupt64` 会校验门目标选择子 DPL>CPL →
+   **#GP(0x28)**；#GP 自己的门也是 0x28 → 嵌套 → #DF → 三重故障。
+   修复：**`cpu_gdt_init()` 提前到 `intr_init()` 之前**（limine.c），
+   门选择子一律 `0x08`（我们 GDT 的 64 位内核码段）；cpu_gdt_init 用
+   pushfq/popfq 保持 IF 原状，早期调用时中断本来就是关的。
+
+### 11.3 其他关键修正（按踩到顺序）
+
+- `sys.o` 对象名冲突：port `sys.S` 与 V7 `usr/sys/dev/sys.c` 都生成 `sys.o`
+  互相覆盖 → build.py 对 `.S` 文件改用 `<stem>.S.o`。
+- 内核态中断里调用调度器前必须 `sti`（SFMASK 清了 IF，否则 tick/键盘死）；
+  `pit_tick` 先 `pic_eoi(0)` 再 `schedule()`（换栈后可能不再走
+  intr_dispatch 的收尾 EOI）。
+- vmm `walk()` 中间层页表补 `PTE_U`（x86 每一级都要 U 才放行 ring3）。
+- `exec.c` 的 `user_top = st.top`（绝不能抬到 STACK_TOP，fork 按
+  `[USER_BASE, user_top)` 逐页扫会变成 ~140TB 死循环）。
+- 内核 CFLAGS 加 `-mno-sse -mno-mmx -mno-sse2`（naked schedule() 的栈
+  对齐无保证，C 函数不得用 SSE）。
+- 内核符号供裸汇编按名引用的（`ok_prefix/fail_prefix/line_end/pick_next`）
+  必须 non-static。
+- gcc14 默认 C23（`char *f()` = 无参）：bash 要 `CC="gcc -std=gnu11"`。
+
+### 11.4 用户态三件套 + 镜像
+
+- `tools/build-gnu.sh`：bash 5.2.37 / coreutils 9.5（single-binary）/
+  grep 3.11，全静态。coreutils tarball 曾截断（`gzip -t` 必检）。
+- `tools/build-busybox.sh`：busybox 1.37.0 静态（禁 INIT——init 归 dinit；
+  禁 TC——头文件不兼容）。产物 `build/busybox/bin/busybox`。
+- `tools/build-dinit.sh`：dinit 0.19.4 静态（`-static-libstdc++`），产物在
+  `src/dinit`、`src/dinitctl`（不是 `build/` 下）。
+- `tools/mkimage.sh`：btrfs p2 现在播种**真 rootfs**：
+  `/gnu/bin`（bash/coreutils **硬链接**+grep——内核 btrfs 驱动暂不支持符号
+  链接）、`/bin`（V7 工具 + busybox + applet 硬链接）、`/sbin/dinit`、
+  `/etc/dinit.d/{boot,getty}`（dinit 服务树，源在
+  `port/x86_64/rootfs/`）、`/usr/src` 全源码树。
+- `tools/test-bash.py`：无头冒烟测试——起 qemu 等串口出现 bash，经 monitor
+  `sendkey` 敲 `echo VODYA-OK-42`，串口看到标记即 PASS。
+
+### 11.5 调试工具箱
+
+```bash
+# QEMU 中断流抓现场（iret/#PF/#GP 定位神器）
+timeout 60 qemu-system-x86_64 -M q35 -m 512 -bios /usr/share/ovmf/OVMF.fd \
+  -drive file=build/x86_64/vodya.img,format=raw,if=ide \
+  -serial file:/tmp/opencode/serial.log -display none -d int -D /tmp/opencode/int.log
+# -d int 每行: <n>: v=向量 e=错误码 cpl=... IP=cs:rip SP=ss:rsp —— 中断送达
+# 时的 CPU 现场；配合 llvm-nm/llvm-objdump 对符号即可定位炸点
+```
+
+### 11.6 Session 11 收尾状态（2026-10-31）
+
+本轮把「QEMU 里能跑 bash」从崩溃状态推到**可连续执行外部命令**，同时把调试
+过程中修掉的根因全部记在这里（每条都是实测踩出来的）：
+
+- **调度器**：`schedule()` 抢占时必须把 RUNNING 改成 RUNNABLE。原来被抢占的
+  进程保留 RUNNING，`pick_next()` 永远找不到它；bash 在 `wait4` 里被抢占后
+  子进程退出时无人可切 → 整机挂死。
+- **FS_BASE**：每次上下文切换都要恢复 `cpu_fsbase_set(p->fsbase)`。否则用户
+  进程拿到别人的 TLS，`fs:0x28` 的 stack canary 对不上，coreutils 一律
+  "stack smashing detected"。
+- **用户态异常**：`intr_dispatch()` 对 CPL=3 的异常走 `proc_fault_exit(sig)`，
+  进程以 128+sig 退出，不再 panic 整机。
+- **select/pselect6**：零超时 = 轮询（readline 的 `_rl_input_available()`），
+  非零超时必须按 jiffies 计时后返回 0（`_rl_input_queued()` 用 500ms 判断
+  按键序列是否继续）。忽略超时会让 readline 把后续按键当成序列续键吞掉
+  （丢首字符 + 响铃）。
+- **输入环**：`kbd_poll/kbd_getchar/kbd_haschar` 全部 cli/popfq 保护 —— PS/2
+  IRQ、COM1 IRQ4、读 syscall 三个上下文共用一个环。
+- **串口输入**：COM1 开 RX 中断（IER=0x01，IRQ4），`\r`→`\n`。仅靠 100Hz
+  定时器轮询会溢出 16 字节 FIFO 丢字符。
+- **i8042 AUX**：`kbd_intr()` 必须检查状态口 0x20（鼠标字节）。把鼠标包当
+  scancode 会往输入环里塞随机高字节，readline 当 meta 键 → 丢字符 + 响铃。
+- **内核栈池**：`pmm_stack_reserve()` 在 memmap 阶段预留最大可用区低端
+  16 MiB，`pmm_stack_alloc/free` 切 64 KiB 槽位。freelist 一旦碎片化，
+  `alloc_run(16)` 永远失败 → fork 报 Cannot allocate memory。
+- **btrfs**：名称哈希种子 `crc32c(0xfffffffe,...)`；选中内节点「最后一个
+  ≤ want」；dtype==2 的目录项不再跳过；inode 字段 size@16 / mode@52。
+- **目录遍历**：新增 `btrfs_readdir()`（DIR_INDEX 顺序走）
+  + `getdents64`(217)、`statx`(332)、`fstatat` 的 AT_EMPTY_PATH 语义、
+  `gettimeofday`(96) 用 RDI（原来误用 RSI，只拿到时区指针 → EFAULT）、
+  `fstat` 报告目录位。glibc 2.32+ 的 `fdopendir()` 走
+  `newfstatat(fd,"",AT_EMPTY_PATH)`，不实现这些 `ls <dir>` 会直接
+  "Not a directory"。
+- **已知未完成**：`ls <dir>` 仍报 ENOTDIR（statx/fstat 已实现，疑似
+  `opendir` 走的路径还没覆盖）；`/gnu/bin/head` 等 applet 的 PATH 查找
+  失败（硬链接是否真正写进镜像待查）；dinit 接管 PID 1 需要信号投递。
+
+验证命令（串口，见 §11.5）：
+
+```bash
+echo hello                     # hello
+/gnu/bin/expr 3 + 4            # 7
+/gnu/bin/false; echo rc=$?     # rc=1
+/gnu/bin/stat -c %F:%a /gnu/bin  # directory:755
+```

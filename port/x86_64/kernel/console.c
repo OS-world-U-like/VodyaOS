@@ -69,6 +69,12 @@ serial_putc(char c)
 {
 	(void)c;
 }
+
+int
+serial_getchar(void)
+{
+	return -1;
+}
 #else
 static inline void
 outb(uint16_t port, uint8_t val)
@@ -95,6 +101,7 @@ serial_init(void)
 	outb(COM1 + 3, 0x03);	/* 8N1 */
 	outb(COM1 + 2, 0xc7);	/* FIFO on, clear */
 	outb(COM1 + 4, 0x0b);	/* DTR + RTS + OUT2 */
+	outb(COM1 + 1, 0x01);	/* IRQ on received data (IRQ4) */
 }
 
 static void
@@ -103,6 +110,21 @@ serial_putc(char c)
 	while ((inb(COM1 + 5) & 0x20) == 0)
 		;
 	outb(COM1 + 0, (uint8_t)c);
+}
+
+/*
+ * Non-blocking COM1 receive.  The PS/2 keyboard is the primary input,
+ * but a serial line is the only usable console on headless machines
+ * (and the only reliable input for automated tests), so keyboard.c
+ * polls this port on every timer tick and merges the bytes into the
+ * same input ring network as the keyboard.
+ */
+int
+serial_getchar(void)
+{
+	if ((inb(COM1 + 5) & 0x01) == 0)		/* data ready */
+		return -1;
+	return (int)inb(COM1 + 0);
 }
 
 /*

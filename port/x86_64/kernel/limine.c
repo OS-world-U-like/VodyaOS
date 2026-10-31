@@ -85,6 +85,16 @@ int  kbd_getchar(void);
 void pmm_init(void);
 uint64_t pmm_total(void);
 uint64_t pmm_free(void);
+/* userland bring-up */
+void cpu_gdt_init(void);
+void cpu_init(void);
+int  fat_init(unsigned int lba);
+int  btrfs_init(unsigned long long base_lba);
+void proc_start(void);
+extern int have_btrfs;
+int btrfs_lookup(const char *path, unsigned long long *ino,
+    unsigned long long *size, unsigned short *mode);
+extern int have_fat;
 extern volatile uint64_t jiffies;
 
 #define MEMTYPE_USABLE			0
@@ -145,7 +155,8 @@ puthex(uint64_t v)
 
 /* ------------------------------------------------ systemd-style status log */
 
-static void
+/* exported: exec.c's proc_start reports through these */
+void
 ok_prefix(void)
 {
 	SW("\x1b[0;32m");
@@ -154,7 +165,7 @@ ok_prefix(void)
 	console_setfg(255, 255, 255);
 }
 
-static void
+void
 fail_prefix(void)
 {
 	SW("\x1b[0;31m");
@@ -163,7 +174,7 @@ fail_prefix(void)
 	console_setfg(255, 255, 255);
 }
 
-static void
+void
 line_end(void)
 {
 	SW("\x1b[0m");
@@ -328,6 +339,16 @@ limine_start(void)
 	ok("Reached target Early Boot.");
 
 	/* ---- interrupt + device infrastructure (HANDOFF.md 8.5) ---- */
+
+	/*
+	 * Our GDT first: the IDT gates target kernel CS 0x08, which is
+	 * only a 64-bit code segment in OUR GDT (Limine's 0x08 is a
+	 * 16-bit code segment and its 0x28 is reused as user code by
+	 * us).  Interrupts are still off here, so no gate validation
+	 * can happen against the wrong GDT.  cpu_init() re-runs this
+	 * harmlessly before setting up the syscall MSRs.
+	 */
+	cpu_gdt_init();
 	intr_init();
 	ok("Initialized IDT and exception handlers.");
 
@@ -355,51 +376,48 @@ limine_start(void)
 	console_puts("\r\n");
 	detail_end();
 
-	/* ---- interactive input demo: type, see it echoed ---- */
-	{
-		char line[160];
-		int n = 0;
+	/* ---- userland bring-up ---- */
 
-		console_puts("\r\nKeyboard input is live - type a line, "
-		    "Enter to confirm, 'halt' quits.\r\n");
-		for (;;) {
-			int c;
-
-			console_puts("vodya> ");
-			n = 0;
-			for (;;) {
-				c = kbd_getchar();
-				if (c < 0)
-					continue;
-				if (c == '\n')
-					break;
-				if (c == '\b') {
-					if (n > 0)
-						n--;
-					continue;
-				}
-				if (n < (int)sizeof(line) - 1)
-					line[n++] = (char)c;
-			}
-			line[n] = 0;
-			if (line[0] == 0)
-				continue;
-			if (line[0] == 'h' && line[1] == 'a' &&
-			    line[2] == 'l' && line[3] == 't' && line[4] == 0)
-				break;
-			console_puts("you typed: ");
-			console_puts(line);
-			console_puts("\r\n");
-		}
+	/* cpu_init swaps in our own GDT; an IRQ landing between lgdt
+	 * and the CS reload would iret to the wrong selector, so keep
+	 * interrupts off across it */
+	cli();
+	cpu_init();
+	sti();
+	ok("Initialized GDT/TSS and syscall entry (EFER.SCE).");
+	have_fat = (fat_init(2048) == 0);
+	if (have_fat) {
+		ok_prefix();
+		console_puts("FAT32 bootstrap partition online "
+		    "(fallback rootfs)");
+		line_end();
+	} else {
+		fail_prefix();
+		console_puts("FAT32 bootstrap partition not found");
+		line_end();
 	}
 
-	detail_prefix();
-	console_puts("V7 main() pending: userland exec, btrfs rootfs "
-	    "(HANDOFF.md 8.5)\r\n");
-	detail_end();
+	have_btrfs = (btrfs_init(1050624) == 0);	/* partition-2 start LBA */
+	if (have_btrfs) {
+		ok("Mounted btrfs root filesystem (partition 2).");
+	} else {
+		fail_prefix();
+		console_puts("btrfs root filesystem not available");
+		line_end();
+	}
 
-	/* V7 main() comes back here once paging/IDT/clock exist (HANDOFF 8.5).
-	 * main(); */
+	ok_prefix();
+	console_puts("Root filesystem: ");
+	console_puts(have_btrfs ? "btrfs (partition 2)" :
+	    have_fat ? "FAT32 (partition 1, fallback)" : "none");
+	line_end();
+
+	proc_start();				/* execs /gnu/bin/bash as
+						 * PID 1; no return */
+
+	fail_prefix();
+	console_puts("proc_start returned unexpectedly");
+	line_end();
 	console_puts("halted.\r\n");
 	for (;;)
 		__asm__ volatile("cli; hlt");

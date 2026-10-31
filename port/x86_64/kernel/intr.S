@@ -7,8 +7,28 @@
  * register, then calls the C dispatcher with a struct trapframe.
  * iretq undoes everything on the way out.
  *
- * Stack layout below intr_common (see struct trapframe in intr.c):
- *   [ss][rsp][rflags][cs][rip][err][vector][r15..rax]
+ * What the CPU actually pushes (verified empirically against QEMU
+ * TCG with -d int, for both a timer tick and #PF at CPL 0): in 64-bit
+ * mode the CPU first aligns RSP down to 16 bytes and then ALWAYS
+ * pushes five quads -- rip, cs, rflags, old rsp, old ss in ascending
+ * memory order -- even for same-privilege kernel entries.  With the
+ * stub's dummy err + vector below that, a kernel entry looks like
+ * (ascending): vec@E, err@E+8, rip@E+0x10, cs@E+0x18, rflags@E+0x20,
+ * X@E+0x28, SS@E+0x30, where X is the true interrupted RSP (E =
+ * align_down(X) - 0x38 for X = 8 mod 16).  Ring-3 entries get the
+ * same five-quad shape, so the interrupted RSP and SS can simply be
+ * READ from E+0x28 / E+0x30 instead of being synthesised.  (A real
+ * CPU pushes only three quads for same-ring entries; if this port is
+ * ever moved to hardware, add shape detection here.)
+ *
+ * intr_common shifts the whole entry block down one quad into the
+ * stub's own space and turns every frame into the same uniform
+ * layout:
+ *
+ *   [ss][rsp][rflags][cs][rip][err][vector][r15..rax]   (0xb0 bytes)
+ *
+ * The shuffle only ever writes below the interrupted RSP.  The
+ * epilogue is then one path for both rings.
  *
  * intr.c only needs the stub addresses (intr_stub[256]).
  */
@@ -16,6 +36,40 @@
 	.text
 
 intr_common:
+	testb	$3, 0x18(%rsp)			/* CPU's CS quad: ring 3? */
+	jnz	2f
+	/*
+	 * Kernel entry: rsp = E, and the stack holds (ascending)
+	 * vec@E, err@E+8, rip@E+0x10, cs@E+0x18, rflags@E+0x20,
+	 * X@E+0x28, SS@E+0x30 -- X = the true interrupted RSP, pushed
+	 * by the CPU as part of its five-quad frame (see header).
+	 * The uniform frame base is E-0x88: shift vec..rflags down
+	 * 0x10, then copy X and SS into the two freed slots.  Every
+	 * destination that overlaps a source is written only after
+	 * that source has been read.
+	 */
+	subq	$0x18, %rsp			/* rsp = E-0x18 */
+	pushq	%rax				/* stash interrupted RAX */
+	/* shuffle (rsp = E-0x20) */
+	movq	0x20(%rsp), %rax		/* vec     (E)       */
+	movq	%rax, 0x10(%rsp)		/* -> E-0x10 */
+	movq	0x28(%rsp), %rax		/* err     (E+0x08)  */
+	movq	%rax, 0x18(%rsp)		/* -> E-0x08 */
+	movq	0x30(%rsp), %rax		/* rip     (E+0x10)  */
+	movq	%rax, 0x20(%rsp)		/* -> E       */
+	movq	0x38(%rsp), %rax		/* cs      (E+0x18)  */
+	movq	%rax, 0x28(%rsp)		/* -> E+0x08 */
+	movq	0x40(%rsp), %rax		/* rflags  (E+0x20)  */
+	movq	%rax, 0x30(%rsp)		/* -> E+0x10 */
+	movq	0x48(%rsp), %rax		/* interrupted RSP: [E+0x28] */
+	movq	%rax, 0x38(%rsp)		/* -> E+0x18 */
+	movq	0x50(%rsp), %rax		/* interrupted SS:  [E+0x30] */
+	movq	%rax, 0x40(%rsp)		/* -> E+0x20 */
+	addq	$0x10, %rsp			/* rsp = E-0x10 (vec slot) */
+	movq	-0x10(%rsp), %rax		/* recover interrupted RAX */
+	jmp	3f
+2:
+3:
 	pushq	%rax
 	pushq	%rbx
 	pushq	%rcx
@@ -49,7 +103,9 @@ intr_common:
 	popq	%rcx
 	popq	%rbx
 	popq	%rax
-	addq	$16, %rsp			/* drop vector + error code */
+	addq	$16, %rsp			/* drop vector + error code:
+						 * rsp = rip slot of the
+						 * uniform frame (both rings) */
 	iretq
 
 /* IESTUB n err - stub for vector n; err = 1 when the CPU pushes a code */

@@ -19,6 +19,7 @@ typedef unsigned long  uint64_t;
 #define KBD_DATA	0x60
 #define KBD_STAT	0x64
 #define STAT_OBF	0x01		/* output buffer full */
+#define STAT_AUX	0x20		/* byte came from the mouse port */
 
 static inline void
 outb(uint16_t port, uint8_t val)
@@ -37,9 +38,16 @@ inb(uint16_t port)
 
 /* console.c */
 void console_putc(char c);
+int  serial_getchar(void);		/* COM1, -1 when idle */
 
 /* intr.c */
 void irq_register(int irq, void (*fn)(uint64_t *frame));
+void pic_eoi(int irq);
+/* syscall.c */
+void proc_wake_all(void);
+
+void kbd_poll(void);
+static void kb_echo(char c);
 
 /* --------------------------------------------------------- scancodes */
 
@@ -74,6 +82,39 @@ static volatile char kb_buf[KBD_BUFLEN];
 
 static int shift_l, shift_r, caps, ctrl;
 
+/* kernel-side echo: on until userland (bash + readline) takes over,
+ * then turned off to avoid double echo */
+static int echo_on = 1;
+
+void
+kbd_echo_enable(int on)
+{
+	echo_on = on;
+}
+
+/*
+ * The ring is touched from three contexts: the PS/2 IRQ, the COM1
+ * receive IRQ / timer poll and the reading syscall (interrupts on).
+ * Without masking, a push interrupted mid-update republishes a stale
+ * kb_head and swallows or resurrects bytes -- the classic symptom was
+ * the first character of a line showing up only after the next
+ * prompt.  Callers in IRQ context already run with IF=0.
+ */
+static inline unsigned long long
+irq_save(void)
+{
+	unsigned long long f;
+
+	__asm__ volatile("pushfq; popq %0; cli" : "=r"(f) : : "memory");
+	return f;
+}
+
+static inline void
+irq_restore(unsigned long long f)
+{
+	__asm__ volatile("pushq %0; popfq" : : "r"(f) : "memory");
+}
+
 static void
 kb_push(char c)
 {
@@ -88,13 +129,61 @@ kb_push(char c)
 int
 kbd_getchar(void)
 {
+	unsigned long long f;
 	int c = -1;
 
+	kbd_poll();
+	f = irq_save();
 	if (kb_tail != kb_head) {
 		c = (unsigned char)kb_buf[kb_tail];
 		kb_tail = (kb_tail + 1) % KBD_BUFLEN;
 	}
+	irq_restore(f);
 	return c;
+}
+
+/* non-destructive: is input waiting?  Used by select()/poll(). */
+int
+kbd_haschar(void)
+{
+	unsigned long long f;
+	int r;
+
+	kbd_poll();
+	f = irq_save();
+	r = kb_tail != kb_head;
+	irq_restore(f);
+	return r;
+}
+
+/*
+ * Drain whatever COM1 has queued into the same ring the keyboard
+ * feeds.  Called from the UART receive IRQ, the timer tick (so blocked
+ * readers get woken even when nobody is pressing keys) and before
+ * every ring access.  CR is translated to NL so a serial terminal's
+ * Enter works the same way as the keyboard's.
+ */
+void
+kbd_poll(void)
+{
+	unsigned long long f = irq_save();
+	int had = 0;
+
+	for (;;) {
+		int c = serial_getchar();
+
+		if (c < 0)
+			break;
+		if (c == '\r')
+			c = '\n';
+		kb_push((char)c);
+		if (echo_on)
+			kb_echo((char)c);
+		had = 1;
+	}
+	irq_restore(f);
+	if (had)
+		proc_wake_all();
 }
 
 static void
@@ -173,8 +262,24 @@ kbd_intr(uint64_t *frame)
 		if (ctrl && c >= 'a' && c <= 'z')
 			c = c - 'a' + 1;
 		kb_push(c);
-		kb_echo(c);
+		if (echo_on)
+			kb_echo(c);
+		proc_wake_all();		/* console readers block in
+						 * sys_read (syscall.c) */
 	}
+}
+
+/*
+ * COM1 receive interrupt (IRQ4).  Polling from the 100 Hz tick was not
+ * enough for bursty serial input: the 16550 receive FIFO is only 16
+ * bytes, so a pasted command line overran it and lost characters.
+ */
+static void
+serial_intr(uint64_t *frame)
+{
+	(void)frame;
+	kbd_poll();
+	pic_eoi(4);
 }
 
 void
@@ -201,4 +306,5 @@ kbd_init(void)
 
 	kb_head = kb_tail = 0;
 	irq_register(1, kbd_intr);
+	irq_register(4, serial_intr);		/* COM1 RX */
 }
